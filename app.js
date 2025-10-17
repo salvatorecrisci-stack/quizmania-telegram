@@ -4,25 +4,40 @@ let timeLeft = 20;
 let timerInterval;
 let questions = [];
 let userAnswers = [];
-let quizStartTime;
+
+function safeGetUserId() {
+    try {
+        if (typeof getUserId !== 'undefined') {
+            return getUserId();
+        }
+    } catch(e) {}
+    return 'user_' + Date.now();
+}
+
+function safeGetUserName() {
+    try {
+        if (typeof getUserName !== 'undefined') {
+            return getUserName();
+        }
+    } catch(e) {}
+    return 'Giocatore';
+}
 
 let userStats = {
-    id: getUserId(),
-    name: getUserName(),
+    id: safeGetUserId(),
+    name: safeGetUserName(),
     streak: 0,
     stars: 100,
     totalGames: 0,
     totalScore: 0,
     bestStreak: 0,
-    lastPlayedDate: null,
-    achievements: []
+    lastPlayedDate: null
 };
 
 window.addEventListener('DOMContentLoaded', function() {
     console.log('App caricata!');
     loadUserData();
     loadQuestions();
-    setupEventListeners();
     updateCurrentDate();
     setTimeout(() => {
         hideScreen('loading-screen');
@@ -47,12 +62,12 @@ function hideScreen(screenId) {
 
 function backHome() {
     showScreen('home-screen');
-    hideBackButton();
+    try { hideBackButton(); } catch(e) {}
     updateStatsDisplay();
 }
 
 function loadUserData() {
-    const saved = localStorage.getItem('quizmania_user_' + getUserId());
+    const saved = localStorage.getItem('quizmania_user_' + userStats.id);
     if (saved) {
         userStats = JSON.parse(saved);
         checkStreak();
@@ -61,7 +76,7 @@ function loadUserData() {
 }
 
 function saveUserData() {
-    localStorage.setItem('quizmania_user_' + getUserId(), JSON.stringify(userStats));
+    localStorage.setItem('quizmania_user_' + userStats.id, JSON.stringify(userStats));
 }
 
 function checkStreak() {
@@ -86,7 +101,7 @@ function updateStatsDisplay() {
     document.getElementById('user-rank').textContent = '#' + rank;
 }
 
-async function loadQuestions() {
+function loadQuestions() {
     questions = [
         { question: "Qual è la capitale d'Italia?", answers: ["Milano", "Roma", "Napoli", "Firenze"], correct: 1, category: "Geografia" },
         { question: "Chi ha scritto 'La Divina Commedia'?", answers: ["Petrarca", "Boccaccio", "Dante Alighieri", "Ariosto"], correct: 2, category: "Letteratura" },
@@ -112,16 +127,15 @@ function shuffleArray(array) {
 function startQuiz() {
     const today = new Date().toDateString();
     if (userStats.lastPlayedDate === today) {
-        showAlert('Hai già giocato oggi! Torna domani per un nuovo quiz 😊');
+        alert('Hai già giocato oggi! Torna domani per un nuovo quiz 😊');
         return;
     }
     currentQuestion = 0;
     score = 0;
     userAnswers = [];
-    quizStartTime = Date.now();
-    vibrate('medium');
+    try { vibrate('medium'); } catch(e) {}
     showScreen('quiz-screen');
-    showBackButton(backHome);
+    try { showBackButton(backHome); } catch(e) {}
     loadQuestion();
     startTimer();
 }
@@ -154,12 +168,7 @@ function selectAnswer(answerIndex) {
     clearInterval(timerInterval);
     const question = questions[currentQuestion];
     const isCorrect = answerIndex === question.correct;
-    userAnswers.push({
-        questionIndex: currentQuestion,
-        userAnswer: answerIndex,
-        correct: isCorrect,
-        timeSpent: 20 - timeLeft
-    });
+    userAnswers.push({ questionIndex: currentQuestion, userAnswer: answerIndex, correct: isCorrect });
     const buttons = document.querySelectorAll('.answer-btn');
     buttons.forEach((btn, idx) => {
         btn.disabled = true;
@@ -169,10 +178,8 @@ function selectAnswer(answerIndex) {
             btn.classList.add('wrong');
         }
     });
-    vibrate(isCorrect ? 'heavy' : 'medium');
-    if (isCorrect) {
-        score++;
-    }
+    try { vibrate(isCorrect ? 'heavy' : 'medium'); } catch(e) {}
+    if (isCorrect) score++;
     setTimeout(() => {
         currentQuestion++;
         if (currentQuestion < questions.length) {
@@ -202,8 +209,6 @@ function updateTimerDisplay() {
     const timerEl = document.querySelector('.timer');
     if (timeLeft <= 5) {
         timerEl.style.color = '#FF7675';
-    } else if (timeLeft <= 10) {
-        timerEl.style.color = '#FDCB6E';
     } else {
         timerEl.style.color = '#FDCB6E';
     }
@@ -215,4 +220,198 @@ function endQuiz() {
     userStats.stars += starsEarned;
     userStats.totalGames++;
     userStats.totalScore += score;
-    userStats.streak
+    userStats.streak++;
+    userStats.lastPlayedDate = new Date().toDateString();
+    if (userStats.streak > userStats.bestStreak) {
+        userStats.bestStreak = userStats.streak;
+    }
+    saveUserData();
+    showResults();
+}
+
+function showResults() {
+    showScreen('result-screen');
+    let emoji, title;
+    if (score >= 9) {
+        emoji = '🏆';
+        title = 'PERFETTO!';
+    } else if (score >= 7) {
+        emoji = '🎉';
+        title = 'Ottimo!';
+    } else if (score >= 5) {
+        emoji = '👍';
+        title = 'Bene!';
+    } else {
+        emoji = '💪';
+        title = 'Riprova!';
+    }
+    document.getElementById('result-emoji').textContent = emoji;
+    document.getElementById('result-title').textContent = title;
+    document.getElementById('final-score').textContent = score;
+    const starsEarned = score * 10;
+    document.getElementById('stars-earned').textContent = '+' + starsEarned + '⭐';
+    document.getElementById('streak-result').textContent = '🔥 ' + userStats.streak;
+    const rank = Math.floor(Math.random() * 1000) + 1;
+    document.getElementById('global-rank').textContent = '#' + rank;
+    try { vibrate('heavy'); } catch(e) {}
+}
+
+function use5050() {
+    if (userStats.stars < 100) {
+        alert('Non hai abbastanza Stars! (Servono 100⭐)');
+        return;
+    }
+    userStats.stars -= 100;
+    saveUserData();
+    updateStatsDisplay();
+    const question = questions[currentQuestion];
+    const buttons = document.querySelectorAll('.answer-btn');
+    let wrongAnswers = [];
+    buttons.forEach((btn, idx) => {
+        if (idx !== question.correct) wrongAnswers.push(idx);
+    });
+    shuffleArray(wrongAnswers);
+    for (let i = 0; i < 2; i++) {
+        buttons[wrongAnswers[i]].style.display = 'none';
+    }
+    document.getElementById('btn-5050').disabled = true;
+    document.getElementById('btn-5050').classList.add('disabled');
+    alert('50/50 usato! ⚡');
+}
+
+function useExtraTime() {
+    if (userStats.stars < 150) {
+        alert('Non hai abbastanza Stars! (Servono 150⭐)');
+        return;
+    }
+    userStats.stars -= 150;
+    saveUserData();
+    updateStatsDisplay();
+    timeLeft += 10;
+    updateTimerDisplay();
+    document.getElementById('btn-time').disabled = true;
+    document.getElementById('btn-time').classList.add('disabled');
+    alert('+10 secondi! ⏰');
+}
+
+function shareResult() {
+    try {
+        shareToTelegram(score, questions.length);
+    } catch(e) {
+        alert('Condividi il tuo risultato: ' + score + '/10!');
+    }
+}
+
+function challengeFriend() {
+    if (userStats.totalGames === 0) {
+        alert('Gioca almeno un quiz prima di sfidare gli amici!');
+        return;
+    }
+    try {
+        challengeFriendTelegram(score);
+    } catch(e) {
+        alert('Sfida i tuoi amici!');
+    }
+}
+
+function showLeaderboard() {
+    showScreen('leaderboard-screen');
+    try { showBackButton(backHome); } catch(e) {}
+    loadLeaderboard('today');
+}
+
+function showLeaderboardPeriod(period) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    loadLeaderboard(period);
+}
+
+function loadLeaderboard(period) {
+    const mockLeaderboard = generateMockLeaderboard();
+    const listEl = document.getElementById('leaderboard-list');
+    listEl.innerHTML = '';
+    mockLeaderboard.forEach((player, index) => {
+        const item = document.createElement('div');
+        item.className = 'leaderboard-item';
+        let rankClass = '';
+        if (index === 0) rankClass = 'gold';
+        else if (index === 1) rankClass = 'silver';
+        else if (index === 2) rankClass = 'bronze';
+        item.innerHTML = `
+            <div class="rank-badge ${rankClass}">${index + 1}</div>
+            <div class="leader-info">
+                <div class="leader-name">${player.name}</div>
+                <div class="leader-score">${player.games} quiz giocati</div>
+            </div>
+            <div class="leader-points">${player.score} pts</div>
+        `;
+        listEl.appendChild(item);
+    });
+    showUserPosition();
+}
+
+function generateMockLeaderboard() {
+    const names = ['Marco', 'Giulia', 'Luca', 'Sara', 'Andrea', 'Elena', 'Paolo', 'Chiara'];
+    const leaderboard = [];
+    for (let i = 0; i < 20; i++) {
+        leaderboard.push({
+            name: names[Math.floor(Math.random() * names.length)] + Math.floor(Math.random() * 100),
+            score: Math.floor(Math.random() * 100) + (20 - i) * 10,
+            games: Math.floor(Math.random() * 50) + 10
+        });
+    }
+    leaderboard.sort((a, b) => b.score - a.score);
+    return leaderboard;
+}
+
+function showUserPosition() {
+    const userPosEl = document.getElementById('user-position');
+    const userRank = Math.floor(Math.random() * 100) + 1;
+    userPosEl.innerHTML = `
+        <div class="rank-badge">#${userRank}</div>
+        <div class="leader-info">
+            <div class="leader-name">${userStats.name} (Tu)</div>
+            <div class="leader-score">${userStats.totalGames} quiz giocati</div>
+        </div>
+        <div class="leader-points">${userStats.totalScore} pts</div>
+    `;
+}
+
+function showProfile() {
+    showScreen('profile-screen');
+    try { showBackButton(backHome); } catch(e) {}
+    loadProfile();
+}
+
+function loadProfile() {
+    document.getElementById('user-name').textContent = userStats.name;
+    document.getElementById('total-games').textContent = userStats.totalGames;
+    const avgScore = userStats.totalGames > 0 ? (userStats.totalScore / userStats.totalGames).toFixed(1) : 0;
+    document.getElementById('avg-score').textContent = avgScore;
+    document.getElementById('best-streak').textContent = userStats.bestStreak;
+    loadAchievements();
+}
+
+function loadAchievements() {
+    const achievements = [
+        { icon: '🎯', name: 'Primo Quiz', unlocked: userStats.totalGames >= 1 },
+        { icon: '🔥', name: 'Streak 3', unlocked: userStats.bestStreak >= 3 },
+        { icon: '🔥🔥', name: 'Streak 7', unlocked: userStats.bestStreak >= 7 },
+        { icon: '💯', name: 'Quiz Perfetto', unlocked: userStats.totalScore >= 10 },
+        { icon: '⭐', name: 'Veterano', unlocked: userStats.totalGames >= 10 },
+        { icon: '👑', name: 'Maestro', unlocked: userStats.totalGames >= 30 }
+    ];
+    const listEl = document.getElementById('achievements-list');
+    listEl.innerHTML = '';
+    achievements.forEach(ach => {
+        const card = document.createElement('div');
+        card.className = 'achievement-card' + (ach.unlocked ? '' : ' locked');
+        card.innerHTML = `
+            <div class="achievement-icon">${ach.icon}</div>
+            <div class="achievement-name">${ach.name}</div>
+        `;
+        listEl.appendChild(card);
+    });
+}
+
+console.log('App.js caricato!');
