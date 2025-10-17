@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizMania Daily</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="screen active">
+        <div class="loader"></div>
+        <p>Caricamento quiz...</p>
+    </div>
+
+    <!-- Home Screen -->
+    <div id="home-screen" class="screen">
+        <div class="header">
+            <div class="logo">🧠</div>
+            <h1>QuizMania Daily</h1>
+            <p class="subtitle">Il quiz del giorno</p>
+            <p class="date" id="current-date"></p>
+        </div>
+        
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-icon">🔥</div>
+                <div class="stat-value" id="user-streak">0</div>
+                <div class="stat-label">Streak</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-value" id="user-stars">100</div>
+                <div class="stat-label">Stars</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🏆</div>
+                <div class="stat-value" id="user-rank">-</div>
+                <div class="stat-label">Posizione</div>
+            </div>
+        </div>
+
+        <div class="daily-quiz-card">
+            <div class="quiz-badge">QUIZ DEL GIORNO</div>
+            <h2>10 Domande • 20s ciascuna</h2>
+            <p>Metti alla prova la tua cultura generale!</p>
+            <button class="btn-primary pulse" onclick="startQuiz()">
+                🎯 Inizia Quiz
+            </button>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn-secondary" onclick="showLeaderboard()">
+                🏆 Classifica
+            </button>
+            <button class="btn-secondary" onclick="showProfile()">
+                👤 Profilo
+            </button>
+        </div>
+
+        <button class="btn-challenge" onclick="challengeFriend()">
+            👥 Sfida un Amico
+        </button>
+    </div>
+
+    <!-- Quiz Screen -->
+    <div id="quiz-screen" class="screen">
+        <div class="quiz-header">
+            <div class="progress-bar">
+                <di
