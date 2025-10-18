@@ -86,4 +86,432 @@
         .progress-fill {
             height: 100%;
             background: white;
-            border-ra
+            border-radius: 10px;
+            transition: width 0.3s;
+            width: 0%;
+        }
+
+        .quiz-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .timer {
+            display: inline-block;
+            min-width: 60px;
+            text-align: center;
+            padding: 5px 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+        }
+
+        .timer.warning {
+            background: #e74c3c;
+            animation: pulse 0.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .question-card {
+            background: white;
+            color: #2c3e50;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .question-card h2 {
+            font-size: 24px;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+
+        .option {
+            background: #f8f9fa;
+            padding: 18px;
+            margin: 12px 0;
+            border-radius: 12px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            background: #e8ecff;
+        }
+
+        .option.correct {
+            background: #2ecc71;
+            color: white;
+            border-color: #27ae60;
+        }
+
+        .option.wrong {
+            background: #e74c3c;
+            color: white;
+            border-color: #c0392b;
+        }
+
+        .option.disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .results-icon { font-size: 120px; text-align: center; margin: 20px 0; }
+        .score-big { font-size: 72px; font-weight: bold; text-align: center; margin: 20px 0; }
+        .score-message { text-align: center; font-size: 28px; margin-bottom: 30px; }
+
+        .leaderboard {
+            background: rgba(255,255,255,0.15);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin: 8px 0;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+
+        .rank { font-size: 24px; font-weight: bold; min-width: 50px; }
+        .player-name { flex: 1; font-size: 16px; }
+        .player-score { font-size: 20px; font-weight: bold; }
+
+        .empty-state { text-align: center; padding: 40px; opacity: 0.7; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HOME -->
+        <div class="screen active" id="home">
+            <div class="logo">
+                <div class="logo-icon">🧠</div>
+                <h1>QuizMania</h1>
+                <p class="subtitle">Daily Brain Challenge</p>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalScore">0</div>
+                    <div class="stat-label">Punteggio</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="streak">0</div>
+                    <div class="stat-label">Streak 🔥</div>
+                </div>
+            </div>
+
+            <button class="btn-primary" onclick="startQuiz()">🎯 Inizia Quiz</button>
+            <button class="btn-secondary" onclick="showLeaderboard()">🏆 Classifica</button>
+        </div>
+
+        <!-- QUIZ -->
+        <div class="screen" id="quiz">
+            <div class="quiz-header">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar"></div>
+                </div>
+                <div class="quiz-info">
+                    <span>Domanda <span id="qNum">1</span>/10</span>
+                    <span class="timer" id="timer">⏱️ 20s</span>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <h2 id="qText"></h2>
+                <div id="options"></div>
+            </div>
+        </div>
+
+        <!-- RISULTATO -->
+        <div class="screen" id="result">
+            <div class="results-icon" id="resultIcon">🎉</div>
+            <h1>Quiz Completato!</h1>
+            
+            <div class="score-big" id="finalScore">0/10</div>
+            <p class="score-message" id="scoreMsg"></p>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="correctCount">0</div>
+                    <div class="stat-label">Corrette</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="pointsEarned">0</div>
+                    <div class="stat-label">Punti</div>
+                </div>
+            </div>
+
+            <button class="btn-primary" onclick="shareResult()">📤 Condividi</button>
+            <button class="btn-secondary" onclick="showLeaderboard()">🏆 Classifica</button>
+            <button class="btn-secondary" onclick="goHome()">🏠 Home</button>
+        </div>
+
+        <!-- CLASSIFICA -->
+        <div class="screen" id="leaderboard">
+            <h1 style="text-align: center; margin-bottom: 20px;">🏆 Classifica</h1>
+            <div class="leaderboard" id="leaderboardList"></div>
+            <button class="btn-secondary" onclick="goHome()">🏠 Home</button>
+        </div>
+    </div>
+
+    <script>
+        // Telegram
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+        }
+
+        function getUser() {
+            if (tg?.initDataUnsafe?.user) {
+                return {
+                    id: tg.initDataUnsafe.user.id,
+                    name: tg.initDataUnsafe.user.first_name || 'Giocatore'
+                };
+            }
+            return { id: 'test_' + Date.now(), name: 'Giocatore' };
+        }
+
+        const user = getUser();
+
+        // Domande
+        const questions = [
+            { q: "Capitale d'Italia?", opts: ["Milano", "Roma", "Napoli", "Firenze"], correct: 1 },
+            { q: "Chi ha dipinto la Gioconda?", opts: ["Michelangelo", "Raffaello", "Leonardo da Vinci", "Caravaggio"], correct: 2 },
+            { q: "Quanti continenti?", opts: ["5", "6", "7", "8"], correct: 2 },
+            { q: "Pianeta più grande?", opts: ["Saturno", "Giove", "Nettuno", "Urano"], correct: 1 },
+            { q: "Anno caduta Muro di Berlino?", opts: ["1987", "1989", "1991", "1993"], correct: 1 },
+            { q: "Chi ha scritto La Divina Commedia?", opts: ["Petrarca", "Boccaccio", "Dante", "Ariosto"], correct: 2 },
+            { q: "Oceano più grande?", opts: ["Atlantico", "Indiano", "Artico", "Pacifico"], correct: 3 },
+            { q: "Quante regioni in Italia?", opts: ["18", "19", "20", "21"], correct: 2 },
+            { q: "Chi ha inventato la lampadina?", opts: ["Tesla", "Edison", "Franklin", "Bell"], correct: 1 },
+            { q: "Fiume più lungo d'Italia?", opts: ["Tevere", "Arno", "Po", "Adige"], correct: 2 }
+        ];
+
+        let currentQ = 0;
+        let score = 0;
+        let timeLeft = 20;
+        let timerInterval = null;
+
+        // Init
+        loadUserData();
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function loadUserData() {
+            try {
+                const data = JSON.parse(localStorage.getItem('qm_' + user.id) || '{}');
+                document.getElementById('totalScore').textContent = data.total || 0;
+                document.getElementById('streak').textContent = data.streak || 0;
+            } catch(e) {}
+        }
+
+        function saveUserData(pts) {
+            try {
+                let data = JSON.parse(localStorage.getItem('qm_' + user.id) || '{}');
+                data.total = (data.total || 0) + pts;
+                
+                const today = new Date().toDateString();
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                
+                if (data.lastPlay === yesterday.toDateString()) {
+                    data.streak = (data.streak || 0) + 1;
+                } else if (data.lastPlay !== today) {
+                    data.streak = 1;
+                }
+                
+                data.lastPlay = today;
+                localStorage.setItem('qm_' + user.id, JSON.stringify(data));
+                loadUserData();
+            } catch(e) {}
+        }
+
+        function startQuiz() {
+            currentQ = 0;
+            score = 0;
+            showScreen('quiz');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (currentQ >= questions.length) {
+                showResults();
+                return;
+            }
+
+            const q = questions[currentQ];
+            
+            document.getElementById('qNum').textContent = currentQ + 1;
+            document.getElementById('qText').textContent = q.q;
+            document.getElementById('progressBar').style.width = ((currentQ + 1) / questions.length * 100) + '%';
+
+            const container = document.getElementById('options');
+            container.innerHTML = '';
+
+            q.opts.forEach((opt, i) => {
+                const div = document.createElement('div');
+                div.className = 'option';
+                div.textContent = opt;
+                div.onclick = () => checkAnswer(i);
+                container.appendChild(div);
+            });
+
+            timeLeft = 20;
+            updateTimer();
+            startTimer();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimer();
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    checkAnswer(-1);
+                }
+            }, 1000);
+        }
+
+        function updateTimer() {
+            const t = document.getElementById('timer');
+            t.textContent = `⏱️ ${timeLeft}s`;
+            if (timeLeft <= 5) t.classList.add('warning');
+            else t.classList.remove('warning');
+        }
+
+        function checkAnswer(idx) {
+            clearInterval(timerInterval);
+            
+            const q = questions[currentQ];
+            const opts = document.querySelectorAll('.option');
+            
+            opts.forEach(o => {
+                o.classList.add('disabled');
+                o.onclick = null;
+            });
+
+            opts[q.correct].classList.add('correct');
+
+            if (idx === q.correct) {
+                score++;
+                if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+            } else if (idx !== -1) {
+                opts[idx].classList.add('wrong');
+                if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
+            }
+
+            setTimeout(() => {
+                currentQ++;
+                loadQuestion();
+            }, 1500);
+        }
+
+        function showResults() {
+            const pct = (score / questions.length) * 100;
+            const pts = score * 10;
+            
+            document.getElementById('finalScore').textContent = `${score}/${questions.length}`;
+            document.getElementById('correctCount').textContent = score;
+            document.getElementById('pointsEarned').textContent = pts;
+            
+            let icon = '🎉', msg = '';
+            
+            if (pct === 100) {
+                icon = '🌟';
+                msg = 'PERFETTO! Sei un genio!';
+            } else if (pct >= 80) {
+                icon = '🎉';
+                msg = 'ECCELLENTE!';
+            } else if (pct >= 60) {
+                icon = '👍';
+                msg = 'BENE!';
+            } else if (pct >= 40) {
+                icon = '💪';
+                msg = 'Puoi migliorare!';
+            } else {
+                icon = '📚';
+                msg = 'Continua ad allenarti!';
+            }
+            
+            document.getElementById('resultIcon').textContent = icon;
+            document.getElementById('scoreMsg').textContent = msg;
+            
+            saveUserData(pts);
+            saveToLeaderboard(score);
+            showScreen('result');
+        }
+
+        function saveToLeaderboard(s) {
+            try {
+                let lb = JSON.parse(localStorage.getItem('qm_lb') || '[]');
+                lb.push({ name: user.name, id: user.id, score: s, date: new Date().toISOString() });
+                lb.sort((a, b) => b.score - a.score);
+                lb = lb.slice(0, 100);
+                localStorage.setItem('qm_lb', JSON.stringify(lb));
+            } catch(e) {}
+        }
+
+        function showLeaderboard() {
+            const lb = JSON.parse(localStorage.getItem('qm_lb') || '[]');
+            const container = document.getElementById('leaderboardList');
+            container.innerHTML = '';
+            
+            if (lb.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p style="font-size:48px">🏆</p><p>Nessun punteggio!</p></div>';
+            } else {
+                lb.slice(0, 50).forEach((e, i) => {
+                    let medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`;
+                    const item = document.createElement('div');
+                    item.className = 'leaderboard-item';
+                    item.innerHTML = `
+                        <span class="rank">${medal}</span>
+                        <span class="player-name">${e.name}</span>
+                        <span class="player-score">${e.score}/10</span>
+                    `;
+                    container.appendChild(item);
+                });
+            }
+            
+            showScreen('leaderboard');
+        }
+
+        function shareResult() {
+            const msg = `🧠 Ho fatto ${score}/${questions.length} nel QuizMania Daily!\n\nRiesci a battermi? 🎯`;
+            if (tg) {
+                try {
+                    tg.openTelegramLink(`https://t.me/share/url?url=https://t.me/quiz_daily_italia_bot&text=${encodeURIComponent(msg)}`);
+                } catch(e) {
+                    alert(msg);
+                }
+            } else {
+                alert(msg);
+            }
+        }
+
+        function goHome() {
+            showScreen('home');
+            loadUserData();
+        }
+
+        console.log('✅ QuizMania OK!');
+    </script>
+</body>
+</html>
