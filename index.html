@@ -43,6 +43,19 @@
             border-radius: 15px;
             padding: 20px;
             text-align: center;
+            position: relative;
+        }
+
+        .premium-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: gold;
+            color: #333;
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
         }
 
         .stat-value { font-size: 42px; font-weight: bold; margin-bottom: 5px; }
@@ -57,6 +70,7 @@
             font-weight: 600;
             cursor: pointer;
             margin-bottom: 12px;
+            transition: all 0.2s;
         }
 
         button:active { transform: scale(0.98); }
@@ -70,6 +84,12 @@
         .btn-secondary {
             background: rgba(255,255,255,0.2);
             color: white;
+        }
+
+        .btn-premium {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
         .quiz-header { margin-bottom: 20px; }
@@ -96,6 +116,7 @@
             justify-content: space-between;
             font-size: 18px;
             font-weight: 600;
+            margin-bottom: 10px;
         }
 
         .timer {
@@ -115,6 +136,44 @@
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.1); }
+        }
+
+        .power-ups {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .power-up-btn {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255,255,255,0.15);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .power-up-btn:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-2px);
+        }
+
+        .power-up-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .power-up-icon { font-size: 24px; }
+        .power-up-cost {
+            font-size: 12px;
+            opacity: 0.9;
         }
 
         .question-card {
@@ -158,6 +217,18 @@
             border-color: #c0392b;
         }
 
+        .option.hint {
+            background: #f39c12;
+            color: white;
+            border-color: #e67e22;
+            animation: hintPulse 1s;
+        }
+
+        @keyframes hintPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+
         .option.disabled {
             cursor: not-allowed;
             opacity: 0.6;
@@ -190,6 +261,25 @@
         .player-score { font-size: 20px; font-weight: bold; }
 
         .empty-state { text-align: center; padding: 40px; opacity: 0.7; }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 16px;
+            z-index: 1000;
+            animation: slideDown 0.3s;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateX(-50%) translateY(-100px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -215,6 +305,7 @@
 
             <button class="btn-primary" onclick="startQuiz()">🎯 Inizia Quiz</button>
             <button class="btn-secondary" onclick="showLeaderboard()">🏆 Classifica</button>
+            <button class="btn-premium" onclick="showPremium()">⭐ Ottieni Power-Ups</button>
         </div>
 
         <!-- QUIZ -->
@@ -226,6 +317,24 @@
                 <div class="quiz-info">
                     <span>Domanda <span id="qNum">1</span>/10</span>
                     <span class="timer" id="timer">⏱️ 20s</span>
+                </div>
+                
+                <div class="power-ups">
+                    <button class="power-up-btn" id="hintBtn" onclick="buyHint()">
+                        <span class="power-up-icon">💡</span>
+                        <span>Hint</span>
+                        <span class="power-up-cost">10 ⭐</span>
+                    </button>
+                    <button class="power-up-btn" id="timeBtn" onclick="buyTime()">
+                        <span class="power-up-icon">⏰</span>
+                        <span>+10s</span>
+                        <span class="power-up-cost">5 ⭐</span>
+                    </button>
+                    <button class="power-up-btn" id="skipBtn" onclick="buySkip()">
+                        <span class="power-up-icon">⏭️</span>
+                        <span>Skip</span>
+                        <span class="power-up-cost">15 ⭐</span>
+                    </button>
                 </div>
             </div>
 
@@ -263,6 +372,34 @@
         <div class="screen" id="leaderboard">
             <h1 style="text-align: center; margin-bottom: 20px;">🏆 Classifica</h1>
             <div class="leaderboard" id="leaderboardList"></div>
+            <button class="btn-secondary" onclick="goHome()">🏠 Home</button>
+        </div>
+
+        <!-- PREMIUM/POWER-UPS -->
+        <div class="screen" id="premium">
+            <h1 style="text-align: center; margin-bottom: 20px;">⭐ Power-Ups</h1>
+            
+            <div style="background: rgba(255,255,255,0.15); border-radius: 15px; padding: 25px; margin: 20px 0;">
+                <h2 style="font-size: 24px; margin-bottom: 15px;">💡 Hint</h2>
+                <p style="opacity: 0.9; margin-bottom: 15px;">Mostra la risposta corretta durante il quiz</p>
+                <p style="font-size: 32px; font-weight: bold; margin-bottom: 15px;">10 ⭐ Stars</p>
+                <button class="btn-primary" onclick="purchasePowerUp('hint', 10)">Acquista Hint</button>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.15); border-radius: 15px; padding: 25px; margin: 20px 0;">
+                <h2 style="font-size: 24px; margin-bottom: 15px;">⏰ Tempo Bonus</h2>
+                <p style="opacity: 0.9; margin-bottom: 15px;">Aggiungi 10 secondi extra al timer</p>
+                <p style="font-size: 32px; font-weight: bold; margin-bottom: 15px;">5 ⭐ Stars</p>
+                <button class="btn-primary" onclick="purchasePowerUp('time', 5)">Acquista Tempo</button>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.15); border-radius: 15px; padding: 25px; margin: 20px 0;">
+                <h2 style="font-size: 24px; margin-bottom: 15px;">⏭️ Skip Domanda</h2>
+                <p style="opacity: 0.9; margin-bottom: 15px;">Salta una domanda difficile</p>
+                <p style="font-size: 32px; font-weight: bold; margin-bottom: 15px;">15 ⭐ Stars</p>
+                <button class="btn-primary" onclick="purchasePowerUp('skip', 15)">Acquista Skip</button>
+            </div>
+
             <button class="btn-secondary" onclick="goHome()">🏠 Home</button>
         </div>
     </div>
@@ -305,6 +442,7 @@
         let score = 0;
         let timeLeft = 20;
         let timerInterval = null;
+        let hintUsed = false;
 
         // Init
         loadUserData();
@@ -312,6 +450,14 @@
         function showScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
+        }
+
+        function showNotification(msg) {
+            const notif = document.createElement('div');
+            notif.className = 'notification';
+            notif.textContent = msg;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 3000);
         }
 
         function loadUserData() {
@@ -346,6 +492,7 @@
         function startQuiz() {
             currentQ = 0;
             score = 0;
+            hintUsed = false;
             showScreen('quiz');
             loadQuestion();
         }
@@ -372,6 +519,12 @@
                 div.onclick = () => checkAnswer(i);
                 container.appendChild(div);
             });
+
+            // Reset power-ups buttons
+            document.getElementById('hintBtn').disabled = false;
+            document.getElementById('timeBtn').disabled = false;
+            document.getElementById('skipBtn').disabled = false;
+            hintUsed = false;
 
             timeLeft = 20;
             updateTimer();
@@ -422,6 +575,108 @@
                 currentQ++;
                 loadQuestion();
             }, 1500);
+        }
+
+        // Power-ups durante il quiz
+        function buyHint() {
+            if (hintUsed) {
+                showNotification('Hint già usato!');
+                return;
+            }
+            
+            invokeStarPayment(10, 'hint');
+        }
+
+        function buyTime() {
+            invokeStarPayment(5, 'time');
+        }
+
+        function buySkip() {
+            invokeStarPayment(15, 'skip');
+        }
+
+        function applyHint() {
+            const q = questions[currentQ];
+            const opts = document.querySelectorAll('.option');
+            opts[q.correct].classList.add('hint');
+            hintUsed = true;
+            document.getElementById('hintBtn').disabled = true;
+            showNotification('💡 Risposta evidenziata!');
+        }
+
+        function applyTime() {
+            timeLeft += 10;
+            updateTimer();
+            document.getElementById('timeBtn').disabled = true;
+            showNotification('⏰ +10 secondi!');
+        }
+
+        function applySkip() {
+            clearInterval(timerInterval);
+            currentQ++;
+            document.getElementById('skipBtn').disabled = true;
+            showNotification('⏭️ Domanda saltata!');
+            loadQuestion();
+        }
+
+        // Pagamenti Telegram Stars
+        function invokeStarPayment(amount, type) {
+            if (!tg?.openInvoice) {
+                // Modalità test - simula pagamento
+                showNotification(`Pagamento ${amount} ⭐ simulato (solo test)`);
+                applyPowerUp(type);
+                return;
+            }
+
+            // Crea invoice per Telegram Stars
+            const invoice = {
+                title: getPowerUpTitle(type),
+                description: getPowerUpDescription(type),
+                payload: JSON.stringify({ type: type, userId: user.id }),
+                provider_token: '', // Empty for Stars
+                currency: 'XTR', // Telegram Stars
+                prices: [{ label: 'Power-Up', amount: amount }]
+            };
+
+            tg.openInvoice(invoice, (status) => {
+                if (status === 'paid') {
+                    applyPowerUp(type);
+                    showNotification('✅ Acquisto completato!');
+                } else {
+                    showNotification('❌ Pagamento annullato');
+                }
+            });
+        }
+
+        function getPowerUpTitle(type) {
+            const titles = {
+                'hint': '💡 Hint',
+                'time': '⏰ Tempo Bonus',
+                'skip': '⏭️ Skip Domanda'
+            };
+            return titles[type] || 'Power-Up';
+        }
+
+        function getPowerUpDescription(type) {
+            const descs = {
+                'hint': 'Mostra la risposta corretta',
+                'time': 'Aggiungi 10 secondi',
+                'skip': 'Salta domanda difficile'
+            };
+            return descs[type] || '';
+        }
+
+        function applyPowerUp(type) {
+            switch(type) {
+                case 'hint': applyHint(); break;
+                case 'time': applyTime(); break;
+                case 'skip': applySkip(); break;
+            }
+        }
+
+        // Acquisti dalla pagina Premium
+        function purchasePowerUp(type, amount) {
+            invokeStarPayment(amount, type);
         }
 
         function showResults() {
@@ -506,12 +761,16 @@
             }
         }
 
+        function showPremium() {
+            showScreen('premium');
+        }
+
         function goHome() {
             showScreen('home');
             loadUserData();
         }
 
-        console.log('✅ QuizMania OK!');
+        console.log('✅ QuizMania con Stars OK!');
     </script>
 </body>
 </html>
