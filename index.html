@@ -4,48 +4,117 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QuizMania Daily</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-    <div id="loading-screen" class="screen active">
-        <div class="loader"></div>
-        <p>Caricamento quiz...</p>
-    </div>
+    <div class="container" id="app">
+        <!-- Schermata Home -->
+        <div class="screen" id="homeScreen">
+            <div class="logo">
+                <div class="logo-icon">🧠</div>
+                <h1>QuizMania</h1>
+                <p class="subtitle">Daily Brain Challenge</p>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="userScore">0</div>
+                    <div class="stat-label">Punteggio</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="userStreak">0</div>
+                    <div class="stat-label">Streak 🔥</div>
+                </div>
+            </div>
 
-    <div id="home-screen" class="screen">
-        <div class="header">
-            <div class="logo">🧠</div>
-            <h1>QuizMania Daily</h1>
-            <p class="subtitle">Il quiz del giorno</p>
-            <p class="date" id="current-date"></p>
-        </div>
-        
-        <div class="stats-container">
-            <div class="stat-card">
-                <div class="stat-icon">🔥</div>
-                <div class="stat-value" id="user-streak">0</div>
-                <div class="stat-label">Streak</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">⭐</div>
-                <div class="stat-value" id="user-stars">100</div>
-                <div class="stat-label">Stars</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">🏆</div>
-                <div class="stat-value" id="user-rank">-</div>
-                <div class="stat-label">Posizione</div>
-            </div>
-        </div>
-
-        <div class="daily-quiz-card">
-            <div class="quiz-badge">QUIZ DEL GIORNO</div>
-            <h2>10 Domande • 20s ciascuna</h2>
-            <p>Metti alla prova la tua cultura generale!</p>
-            <button class="btn-primary pulse" onclick="startQuiz()">
+            <button class="btn btn-primary btn-large" onclick="startQuiz()">
                 🎯 Inizia Quiz
+            </button>
+            
+            <button class="btn btn-secondary" onclick="showLeaderboard()">
+                🏆 Classifica
             </button>
         </div>
 
-        <div class="action-buttons
+        <!-- Schermata Quiz -->
+        <div class="screen hidden" id="quizScreen">
+            <div class="quiz-header">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar"></div>
+                </div>
+                <div class="quiz-info">
+                    <span>Domanda <span id="currentQuestion">1</span>/10</span>
+                    <span>⏱️ <span id="timer">20</span>s</span>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <h2 id="questionText">Caricamento domanda...</h2>
+                
+                <div class="options" id="optionsContainer">
+                    <!-- Options will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Schermata Risultati -->
+        <div class="screen hidden" id="resultsScreen">
+            <div class="results-content">
+                <div class="results-icon">🎉</div>
+                <h1>Quiz Completato!</h1>
+                
+                <div class="score-display">
+                    <div class="score-big" id="finalScore">0/10</div>
+                    <p id="scoreMessage">Ottimo lavoro!</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="correctAnswers">0</div>
+                        <div class="stat-label">Corrette</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalPoints">0</div>
+                        <div class="stat-label">Punti</div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="shareScore()">
+                    📤 Condividi Risultato
+                </button>
+                
+                <button class="btn btn-secondary" onclick="showLeaderboard()">
+                    🏆 Vedi Classifica
+                </button>
+                
+                <button class="btn btn-outline" onclick="goHome()">
+                    🏠 Home
+                </button>
+            </div>
+        </div>
+
+        <!-- Schermata Classifica -->
+        <div class="screen hidden" id="leaderboardScreen">
+            <h1>🏆 Classifica</h1>
+            
+            <div class="leaderboard" id="leaderboardList">
+                <!-- Leaderboard will be inserted here -->
+            </div>
+
+            <button class="btn btn-outline" onclick="goHome()">
+                🏠 Torna Home
+            </button>
+        </div>
+    </div>
+
+    <div class="loading" id="loadingScreen">
+        <div class="spinner"></div>
+        <p>Caricamento...</p>
+    </div>
+
+    <script src="telegram-api.js"></script>
+    <script src="quiz-data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
