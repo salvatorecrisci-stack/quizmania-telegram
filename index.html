@@ -43,19 +43,6 @@
             border-radius: 15px;
             padding: 20px;
             text-align: center;
-            position: relative;
-        }
-
-        .premium-badge {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: gold;
-            color: #333;
-            padding: 3px 8px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: bold;
         }
 
         .stat-value { font-size: 42px; font-weight: bold; margin-bottom: 5px; }
@@ -89,7 +76,13 @@
         .btn-premium {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn-admin {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 14px;
+            padding: 12px;
         }
 
         .quiz-header { margin-bottom: 20px; }
@@ -171,10 +164,7 @@
         }
 
         .power-up-icon { font-size: 24px; }
-        .power-up-cost {
-            font-size: 12px;
-            opacity: 0.9;
-        }
+        .power-up-cost { font-size: 12px; opacity: 0.9; }
 
         .question-card {
             background: white;
@@ -280,6 +270,41 @@
             from { transform: translateX(-50%) translateY(-100px); opacity: 0; }
             to { transform: translateX(-50%) translateY(0); opacity: 1; }
         }
+
+        .admin-stats {
+            background: rgba(255,255,255,0.15);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+
+        .admin-stats h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .big-stat {
+            font-size: 64px;
+            font-weight: bold;
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+            font-size: 48px;
+        }
     </style>
 </head>
 <body>
@@ -306,6 +331,7 @@
             <button class="btn-primary" onclick="startQuiz()">🎯 Inizia Quiz</button>
             <button class="btn-secondary" onclick="showLeaderboard()">🏆 Classifica</button>
             <button class="btn-premium" onclick="showPremium()">⭐ Ottieni Power-Ups</button>
+            <button class="btn-admin" onclick="showStats()">📊 Statistiche App</button>
         </div>
 
         <!-- QUIZ -->
@@ -375,7 +401,7 @@
             <button class="btn-secondary" onclick="goHome()">🏠 Home</button>
         </div>
 
-        <!-- PREMIUM/POWER-UPS -->
+        <!-- PREMIUM -->
         <div class="screen" id="premium">
             <h1 style="text-align: center; margin-bottom: 20px;">⭐ Power-Ups</h1>
             
@@ -402,9 +428,26 @@
 
             <button class="btn-secondary" onclick="goHome()">🏠 Home</button>
         </div>
+
+        <!-- STATISTICHE ADMIN -->
+        <div class="screen" id="statsScreen">
+            <h1 style="text-align: center; margin-bottom: 20px;">📊 Statistiche</h1>
+            
+            <div id="statsContent" class="admin-stats">
+                <div class="loading-spinner">⏳</div>
+                <p style="text-align: center;">Caricamento statistiche...</p>
+            </div>
+
+            <button class="btn-secondary" onclick="goHome()">🏠 Home</button>
+        </div>
     </div>
 
     <script>
+        // CONFIG
+        const JSONBIN_API_KEY = '$2a$10$4rVT8baHcHwYj2732j/LSu5jilyIlWohmVUgRKQp/1dMCZOvs2gx6';
+        const JSONBIN_BIN_ID = '68f3c7b9d0ea881f40aa5b3e';
+        const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+
         // Telegram
         const tg = window.Telegram?.WebApp;
         if (tg) {
@@ -444,8 +487,9 @@
         let timerInterval = null;
         let hintUsed = false;
 
-        // Init
+        // Init - Track user
         loadUserData();
+        trackUser();
 
         function showScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -458,6 +502,140 @@
             notif.textContent = msg;
             document.body.appendChild(notif);
             setTimeout(() => notif.remove(), 3000);
+        }
+
+        // JSONBin API
+        async function getStats() {
+            try {
+                const response = await fetch(JSONBIN_URL + '/latest', {
+                    method: 'GET',
+                    headers: {
+                        'X-Access-Key': JSONBIN_API_KEY
+                    }
+                });
+                const data = await response.json();
+                return data.record;
+            } catch(e) {
+                console.error('Errore caricamento stats:', e);
+                return null;
+            }
+        }
+
+        async function updateStats(newStats) {
+            try {
+                await fetch(JSONBIN_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Access-Key': JSONBIN_API_KEY
+                    },
+                    body: JSON.stringify(newStats)
+                });
+                return true;
+            } catch(e) {
+                console.error('Errore aggiornamento stats:', e);
+                return false;
+            }
+        }
+
+        async function trackUser() {
+            const stats = await getStats();
+            if (!stats) return;
+
+            const userId = user.id.toString();
+            const today = new Date().toISOString().split('T')[0];
+
+            // Nuovo utente?
+            if (!stats.users[userId]) {
+                stats.totalUsers++;
+                stats.users[userId] = {
+                    name: user.name,
+                    firstSeen: today,
+                    totalPlays: 0
+                };
+            }
+
+            await updateStats(stats);
+        }
+
+        async function trackPlay() {
+            const stats = await getStats();
+            if (!stats) return;
+
+            const userId = user.id.toString();
+            const today = new Date().toISOString().split('T')[0];
+
+            stats.totalPlays++;
+            
+            if (stats.users[userId]) {
+                stats.users[userId].totalPlays++;
+                stats.users[userId].lastPlay = today;
+            }
+
+            if (!stats.dailyStats[today]) {
+                stats.dailyStats[today] = 0;
+            }
+            stats.dailyStats[today]++;
+
+            await updateStats(stats);
+        }
+
+        async function showStats() {
+            showScreen('statsScreen');
+            
+            const stats = await getStats();
+            
+            if (!stats) {
+                document.getElementById('statsContent').innerHTML = `
+                    <div class="empty-state">
+                        <p style="font-size:48px">❌</p>
+                        <p>Errore caricamento statistiche</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const today = new Date().toISOString().split('T')[0];
+            const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+            const playsToday = stats.dailyStats[today] || 0;
+            const playsYesterday = stats.dailyStats[yesterday] || 0;
+
+            // Ultimi 7 giorni
+            let last7Days = 0;
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(Date.now() - i * 86400000).toISOString().split('T')[0];
+                last7Days += stats.dailyStats[date] || 0;
+            }
+
+            document.getElementById('statsContent').innerHTML = `
+                <h2>📊 Panoramica</h2>
+                
+                <div class="big-stat">${stats.totalUsers}</div>
+                <p style="text-align: center; font-size: 18px; margin-bottom: 30px;">👥 Utenti Totali</p>
+
+                <div class="big-stat">${stats.totalPlays}</div>
+                <p style="text-align: center; font-size: 18px; margin-bottom: 30px;">🎮 Giocate Totali</p>
+
+                <div class="stat-row">
+                    <span>🔥 Oggi</span>
+                    <span style="font-size: 24px; font-weight: bold;">${playsToday}</span>
+                </div>
+
+                <div class="stat-row">
+                    <span>📅 Ieri</span>
+                    <span style="font-size: 24px; font-weight: bold;">${playsYesterday}</span>
+                </div>
+
+                <div class="stat-row">
+                    <span>📈 Ultimi 7 giorni</span>
+                    <span style="font-size: 24px; font-weight: bold;">${last7Days}</span>
+                </div>
+
+                <div class="stat-row">
+                    <span>📊 Media giornaliera</span>
+                    <span style="font-size: 24px; font-weight: bold;">${Math.round(last7Days / 7)}</span>
+                </div>
+            `;
         }
 
         function loadUserData() {
@@ -493,6 +671,7 @@
             currentQ = 0;
             score = 0;
             hintUsed = false;
+            trackPlay(); // Track new play
             showScreen('quiz');
             loadQuestion();
         }
@@ -520,7 +699,6 @@
                 container.appendChild(div);
             });
 
-            // Reset power-ups buttons
             document.getElementById('hintBtn').disabled = false;
             document.getElementById('timeBtn').disabled = false;
             document.getElementById('skipBtn').disabled = false;
@@ -577,13 +755,11 @@
             }, 1500);
         }
 
-        // Power-ups durante il quiz
         function buyHint() {
             if (hintUsed) {
                 showNotification('Hint già usato!');
                 return;
             }
-            
             invokeStarPayment(10, 'hint');
         }
 
@@ -619,22 +795,19 @@
             loadQuestion();
         }
 
-        // Pagamenti Telegram Stars
         function invokeStarPayment(amount, type) {
             if (!tg?.openInvoice) {
-                // Modalità test - simula pagamento
                 showNotification(`Pagamento ${amount} ⭐ simulato (solo test)`);
                 applyPowerUp(type);
                 return;
             }
 
-            // Crea invoice per Telegram Stars
             const invoice = {
                 title: getPowerUpTitle(type),
                 description: getPowerUpDescription(type),
                 payload: JSON.stringify({ type: type, userId: user.id }),
-                provider_token: '', // Empty for Stars
-                currency: 'XTR', // Telegram Stars
+                provider_token: '',
+                currency: 'XTR',
                 prices: [{ label: 'Power-Up', amount: amount }]
             };
 
@@ -674,7 +847,6 @@
             }
         }
 
-        // Acquisti dalla pagina Premium
         function purchasePowerUp(type, amount) {
             invokeStarPayment(amount, type);
         }
@@ -770,7 +942,7 @@
             loadUserData();
         }
 
-        console.log('✅ QuizMania con Stars OK!');
+        console.log('✅ QuizMania con Tracking OK!');
     </script>
 </body>
 </html>
