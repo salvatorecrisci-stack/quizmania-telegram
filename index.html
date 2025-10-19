@@ -2,90 +2,210 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuizMania Daily</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>QuizMania Daily - Quiz Italiano</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            padding: 20px;
+            padding: 15px;
+            overflow-x: hidden;
         }
         
         .container {
             max-width: 500px;
             width: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
+        /* ========== HEADER ========== */
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
         
         .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-size: 2.8em;
+            margin-bottom: 8px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.4);
+            background: linear-gradient(45deg, #fff, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
+        .header p {
+            font-size: 0.95em;
+            opacity: 0.9;
+        }
+        
+        /* ========== STATS ========== */
         .stats {
-            display: flex;
-            justify-content: space-around;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
             margin-bottom: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 10px;
         }
         
-        .stat-item {
+        .stat-card {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 18px;
+            border-radius: 15px;
             text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .stat-value {
-            font-size: 1.8em;
+            font-size: 2.2em;
             font-weight: bold;
             color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
         
         .stat-label {
-            font-size: 0.8em;
-            opacity: 0.8;
+            font-size: 0.85em;
+            opacity: 0.85;
+            margin-top: 5px;
         }
         
+        /* ========== TELEGRAM STARS SHOP (MOLTO VISIBILE) ========== */
+        .stars-shop {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+            border: 3px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .stars-title {
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .stars-title .star-icon {
+            font-size: 1.5em;
+            animation: rotateStar 3s linear infinite;
+        }
+        
+        @keyframes rotateStar {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .powerups-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        
+        .powerup-card {
+            background: white;
+            border-radius: 15px;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            border: 2px solid transparent;
+        }
+        
+        .powerup-card:active {
+            transform: scale(0.95);
+        }
+        
+        .powerup-card:hover:not(.disabled) {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+            border-color: #667eea;
+        }
+        
+        .powerup-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .powerup-icon {
+            font-size: 2.5em;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .powerup-name {
+            font-size: 0.95em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .powerup-price {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+        }
+        
+        .powerup-desc {
+            font-size: 0.7em;
+            color: #666;
+            margin-top: 3px;
+        }
+        
+        /* ========== QUIZ CARD ========== */
         .quiz-card {
             background: white;
             color: #333;
-            border-radius: 15px;
+            border-radius: 20px;
             padding: 25px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
         }
         
         .question-number {
             font-size: 0.9em;
             color: #667eea;
-            margin-bottom: 10px;
+            font-weight: bold;
         }
         
-        .question {
-            font-size: 1.3em;
-            margin-bottom: 20px;
-            font-weight: 500;
+        .question-score {
+            font-size: 0.9em;
+            color: #28a745;
+            font-weight: bold;
         }
         
         .timer {
@@ -94,19 +214,31 @@
             justify-content: center;
             gap: 10px;
             margin-bottom: 20px;
-            font-size: 1.2em;
+            font-size: 1.5em;
             font-weight: bold;
             color: #667eea;
+            padding: 12px;
+            background: #f0f4ff;
+            border-radius: 15px;
         }
         
         .timer.warning {
-            color: #ff6b6b;
-            animation: pulse 1s infinite;
+            color: #ff3b3b;
+            background: #ffe0e0;
+            animation: pulse 0.8s infinite;
         }
         
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+            50% { transform: scale(1.08); }
+        }
+        
+        .question {
+            font-size: 1.35em;
+            margin-bottom: 25px;
+            font-weight: 600;
+            line-height: 1.5;
+            color: #222;
         }
         
         .options {
@@ -116,17 +248,20 @@
         }
         
         .option {
-            background: #f5f5f5;
-            border: 2px solid transparent;
-            border-radius: 10px;
-            padding: 15px;
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 16px;
             cursor: pointer;
             transition: all 0.3s;
-            font-size: 1em;
+            font-size: 1.05em;
+            font-weight: 500;
+            position: relative;
         }
         
         .option:hover {
-            background: #e8e8e8;
+            background: #e8eeff;
+            border-color: #667eea;
             transform: translateX(5px);
         }
         
@@ -138,70 +273,48 @@
         .option.correct {
             background: #d4edda;
             border-color: #28a745;
+            animation: correctAnim 0.5s;
         }
         
         .option.wrong {
             background: #f8d7da;
             border-color: #dc3545;
+            animation: wrongAnim 0.5s;
         }
         
-        /* TELEGRAM STARS POWERUPS */
-        .powerups {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: rgba(255, 215, 0, 0.2);
-            border-radius: 15px;
-            border: 2px solid rgba(255, 215, 0, 0.5);
+        .option.eliminated {
+            opacity: 0.3;
+            pointer-events: none;
+            text-decoration: line-through;
         }
         
-        .powerup-btn {
-            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-            color: #333;
-            border: none;
-            padding: 15px 10px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 0.9em;
-            font-weight: bold;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        @keyframes correctAnim {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
         }
         
-        .powerup-btn:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
+        @keyframes wrongAnim {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
         
-        .powerup-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .powerup-icon {
-            font-size: 1.8em;
-            display: block;
-            margin-bottom: 5px;
-        }
-        
-        .powerup-price {
-            font-size: 0.75em;
-            color: #666;
-            display: block;
-        }
-        
+        /* ========== BUTTONS ========== */
         .btn {
             width: 100%;
-            padding: 15px;
-            font-size: 1.1em;
+            padding: 16px;
+            font-size: 1.15em;
             font-weight: bold;
             border: none;
-            border-radius: 10px;
+            border-radius: 15px;
             cursor: pointer;
             transition: all 0.3s;
-            margin-top: 10px;
+            margin-top: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:active {
+            transform: translateY(2px);
         }
         
         .btn-primary {
@@ -210,16 +323,20 @@
         }
         
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
         }
         
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.25);
             color: white;
-            border: 2px solid white;
+            border: 2px solid rgba(255, 255, 255, 0.5);
         }
         
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.35);
+        }
+        
+        /* ========== SCREENS ========== */
         .screen {
             display: none;
         }
@@ -234,52 +351,108 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
+        /* ========== RESULT SCREEN ========== */
         .result {
             text-align: center;
             padding: 30px 0;
         }
         
         .result-icon {
-            font-size: 4em;
+            font-size: 5em;
             margin-bottom: 20px;
+            animation: bounceIn 0.8s;
+        }
+        
+        @keyframes bounceIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
         }
         
         .result-title {
-            font-size: 2em;
-            margin-bottom: 10px;
+            font-size: 2.2em;
+            margin-bottom: 15px;
+            font-weight: bold;
         }
         
         .result-score {
-            font-size: 3em;
+            font-size: 3.5em;
             color: #ffd700;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+        }
+        
+        .result-details {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 20px;
+            border-radius: 15px;
             margin-bottom: 20px;
         }
         
+        .result-detail-item {
+            font-size: 1.2em;
+            margin: 10px 0;
+        }
+        
+        /* ========== LEADERBOARD ========== */
         .leaderboard {
             background: white;
             color: #333;
-            border-radius: 15px;
+            border-radius: 20px;
             padding: 20px;
             margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+            max-height: 500px;
+            overflow-y: auto;
         }
         
         .leaderboard-item {
             display: flex;
             justify-content: space-between;
-            padding: 12px;
+            align-items: center;
+            padding: 15px;
             border-bottom: 1px solid #eee;
+            transition: all 0.3s;
         }
         
         .leaderboard-item:last-child {
             border-bottom: none;
         }
         
-        .rank {
-            font-weight: bold;
-            color: #667eea;
-            min-width: 30px;
+        .leaderboard-item:hover {
+            background: #f8f9fa;
         }
         
+        .leaderboard-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .rank {
+            font-size: 1.3em;
+            font-weight: bold;
+            min-width: 40px;
+        }
+        
+        .rank.gold { color: #ffd700; }
+        .rank.silver { color: #c0c0c0; }
+        .rank.bronze { color: #cd7f32; }
+        .rank.normal { color: #667eea; }
+        
+        .player-name {
+            font-size: 1.05em;
+            font-weight: 500;
+        }
+        
+        .player-score {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        
+        /* ========== LOADING ========== */
         .loading {
             text-align: center;
             padding: 50px 0;
@@ -300,101 +473,131 @@
             100% { transform: rotate(360deg); }
         }
 
-        .stars-balance {
-            text-align: center;
-            padding: 10px;
-            background: rgba(255, 215, 0, 0.2);
-            border-radius: 10px;
-            margin-bottom: 15px;
-            font-size: 1.1em;
-            font-weight: bold;
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 400px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2.2em;
+            }
+            
+            .powerup-icon {
+                font-size: 2em;
+            }
+            
+            .question {
+                font-size: 1.2em;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- HOME SCREEN -->
+        <!-- ==================== HOME SCREEN ==================== -->
         <div id="homeScreen" class="screen active">
             <div class="header">
                 <h1>🧠 QuizMania</h1>
-                <p>Il quiz quotidiano italiano</p>
+                <p>Il Quiz Quotidiano Italiano con Premi</p>
             </div>
             
             <div class="stats">
-                <div class="stat-item">
+                <div class="stat-card">
                     <div class="stat-value" id="totalScore">0</div>
                     <div class="stat-label">Punti Totali</div>
                 </div>
-                <div class="stat-item">
+                <div class="stat-card">
                     <div class="stat-value" id="streakCount">0</div>
-                    <div class="stat-label">🔥 Streak</div>
+                    <div class="stat-label">🔥 Streak Giorni</div>
                 </div>
             </div>
             
-            <button class="btn btn-primary" onclick="startQuiz()">🎮 Inizia Quiz</button>
-            <button class="btn btn-secondary" onclick="showLeaderboard()">🏆 Classifica</button>
-            <button class="btn btn-secondary" onclick="shareGame()">📤 Condividi</button>
+            <button class="btn btn-primary" onclick="startQuiz()">🎮 Inizia Quiz Giornaliero</button>
+            <button class="btn btn-secondary" onclick="showLeaderboard()">🏆 Classifica Top 50</button>
+            <button class="btn btn-secondary" onclick="shareGame()">📤 Condividi con Amici</button>
         </div>
 
-        <!-- QUIZ SCREEN -->
+        <!-- ==================== QUIZ SCREEN ==================== -->
         <div id="quizScreen" class="screen">
             <!-- TELEGRAM STARS SHOP -->
-            <div class="stars-balance">
-                ⭐ Telegram Stars disponibili
+            <div class="stars-shop">
+                <div class="stars-title">
+                    <span class="star-icon">⭐</span>
+                    <span>Power-Up Telegram Stars</span>
+                    <span class="star-icon">⭐</span>
+                </div>
+                <div class="powerups-grid">
+                    <div class="powerup-card" id="hintCard" onclick="buyHint()">
+                        <span class="powerup-icon">💡</span>
+                        <div class="powerup-name">Hint</div>
+                        <div class="powerup-price">10 ⭐</div>
+                        <div class="powerup-desc">Elimina 2 risposte</div>
+                    </div>
+                    <div class="powerup-card" id="timeCard" onclick="buyTime()">
+                        <span class="powerup-icon">⏰</span>
+                        <div class="powerup-name">Tempo</div>
+                        <div class="powerup-price">5 ⭐</div>
+                        <div class="powerup-desc">+10 secondi</div>
+                    </div>
+                    <div class="powerup-card" id="skipCard" onclick="buySkip()">
+                        <span class="powerup-icon">⏭️</span>
+                        <div class="powerup-name">Skip</div>
+                        <div class="powerup-price">8 ⭐</div>
+                        <div class="powerup-desc">Salta domanda</div>
+                    </div>
+                </div>
             </div>
             
-            <div class="powerups">
-                <button class="powerup-btn" id="hintBtn" onclick="buyHint()">
-                    <span class="powerup-icon">💡</span>
-                    <span>Hint</span>
-                    <span class="powerup-price">10 ⭐</span>
-                </button>
-                <button class="powerup-btn" id="timeBtn" onclick="buyTime()">
-                    <span class="powerup-icon">⏰</span>
-                    <span>+10 sec</span>
-                    <span class="powerup-price">5 ⭐</span>
-                </button>
-                <button class="powerup-btn" id="skipBtn" onclick="buySkip()">
-                    <span class="powerup-icon">⏭️</span>
-                    <span>Skip</span>
-                    <span class="powerup-price">8 ⭐</span>
-                </button>
-            </div>
-            
+            <!-- QUIZ CARD -->
             <div class="quiz-card">
-                <div class="question-number" id="questionNum">Domanda 1/10</div>
+                <div class="question-header">
+                    <div class="question-number" id="questionNum">Domanda 1/10</div>
+                    <div class="question-score" id="currentScore">Punteggio: 0/100</div>
+                </div>
+                
                 <div class="timer" id="timer">
                     <span>⏱️</span>
                     <span id="timeLeft">20</span>
+                    <span>secondi</span>
                 </div>
-                <div class="question" id="question">Caricamento...</div>
+                
+                <div class="question" id="question">Caricamento domanda...</div>
+                
                 <div class="options" id="options"></div>
             </div>
-            
-            <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" style="display:none;">
-                Prossima Domanda →
-            </button>
         </div>
 
-        <!-- RESULT SCREEN -->
+        <!-- ==================== RESULT SCREEN ==================== -->
         <div id="resultScreen" class="screen">
             <div class="result">
-                <div class="result-icon">🎉</div>
+                <div class="result-icon" id="resultEmoji">🎉</div>
                 <div class="result-title">Quiz Completato!</div>
                 <div class="result-score" id="finalScore">0/10</div>
-                <div style="margin-bottom: 20px;">
-                    <div style="font-size: 1.2em;">Punti guadagnati: <span id="earnedPoints" style="color: #ffd700;">0</span></div>
+                
+                <div class="result-details">
+                    <div class="result-detail-item">
+                        ⭐ Punti guadagnati: <strong id="earnedPoints" style="color: #ffd700;">0</strong>
+                    </div>
+                    <div class="result-detail-item">
+                        📊 Precisione: <strong id="accuracy">0%</strong>
+                    </div>
+                    <div class="result-detail-item">
+                        ⚡ Tempo medio: <strong id="avgTime">0s</strong>
+                    </div>
                 </div>
             </div>
             
             <button class="btn btn-primary" onclick="shareScore()">📤 Condividi Risultato</button>
+            <button class="btn btn-secondary" onclick="showLeaderboard()">🏆 Vedi Classifica</button>
             <button class="btn btn-secondary" onclick="goHome()">🏠 Torna alla Home</button>
         </div>
 
-        <!-- LEADERBOARD SCREEN -->
+        <!-- ==================== LEADERBOARD SCREEN ==================== -->
         <div id="leaderboardScreen" class="screen">
             <div class="header">
                 <h1>🏆 Classifica</h1>
+                <p>Top 50 Giocatori</p>
             </div>
             
             <div class="leaderboard" id="leaderboardList">
@@ -409,13 +612,24 @@
     </div>
 
     <script>
+        // ========================================
+        // TELEGRAM WEB APP INITIALIZATION
+        // ========================================
         const tg = window.Telegram.WebApp;
         tg.expand();
         tg.setHeaderColor('#667eea');
         tg.setBackgroundColor('#667eea');
+        tg.enableClosingConfirmation();
         
-        const user = tg.initDataUnsafe.user || {id: 'demo_' + Date.now(), first_name: 'Player'};
+        const user = tg.initDataUnsafe.user || {
+            id: 'demo_' + Date.now(), 
+            first_name: 'Giocatore',
+            username: 'player' + Math.floor(Math.random() * 1000)
+        };
         
+        // ========================================
+        // QUESTIONS DATABASE
+        // ========================================
         const questions = [
             {q: "Qual è la capitale d'Italia?", o: ["Roma", "Milano", "Napoli", "Torino"], a: 0},
             {q: "Chi ha dipinto la Gioconda?", o: ["Leonardo da Vinci", "Michelangelo", "Raffaello", "Caravaggio"], a: 0},
@@ -429,20 +643,30 @@
             {q: "Quante regioni ha l'Italia?", o: ["20", "19", "21", "18"], a: 0}
         ];
         
+        // ========================================
+        // GAME STATE
+        // ========================================
         let currentQ = 0;
         let score = 0;
         let timer;
         let timeLeft = 20;
         let hintUsed = false;
+        let timeAdded = false;
         let answered = false;
+        let questionTimes = [];
         
+        // ========================================
+        // USER DATA MANAGEMENT
+        // ========================================
         function loadUserData() {
             try {
                 const data = JSON.parse(localStorage.getItem('qm_' + user.id) || '{}');
                 document.getElementById('totalScore').textContent = data.total || 0;
                 document.getElementById('streakCount').textContent = data.streak || 0;
+                return data;
             } catch(e) {
                 console.error('Load error:', e);
+                return {};
             }
         }
         
@@ -450,7 +674,8 @@
             try {
                 let data = JSON.parse(localStorage.getItem('qm_' + user.id) || '{}');
                 data.total = (data.total || 0) + pts;
-                data.name = user.first_name || 'Player';
+                data.name = user.first_name || 'Giocatore';
+                data.username = user.username || '';
                 
                 const today = new Date().toDateString();
                 const lastPlay = data.lastPlay || '';
@@ -465,10 +690,13 @@
                 }
                 
                 data.lastPlay = today;
-                localStorage.setItem('qm_' + user.id, JSON.stringify(data));
+                data.gamesPlayed = (data.gamesPlayed || 0) + 1;
                 
+                localStorage.setItem('qm_' + user.id, JSON.stringify(data));
                 updateLeaderboard(data);
                 loadUserData();
+                
+                return data;
             } catch(e) {
                 console.error('Save error:', e);
             }
@@ -480,9 +708,21 @@
                 const idx = lb.findIndex(u => u.id === user.id);
                 
                 if (idx >= 0) {
-                    lb[idx] = {id: user.id, name: userData.name, total: userData.total};
+                    lb[idx] = {
+                        id: user.id, 
+                        name: userData.name, 
+                        username: userData.username,
+                        total: userData.total,
+                        streak: userData.streak || 0
+                    };
                 } else {
-                    lb.push({id: user.id, name: userData.name, total: userData.total});
+                    lb.push({
+                        id: user.id, 
+                        name: userData.name,
+                        username: userData.username,
+                        total: userData.total,
+                        streak: userData.streak || 0
+                    });
                 }
                 
                 lb.sort((a, b) => b.total - a.total);
@@ -494,15 +734,23 @@
             }
         }
         
+        // ========================================
+        // SCREEN NAVIGATION
+        // ========================================
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
         }
         
+        // ========================================
+        // QUIZ LOGIC
+        // ========================================
         function startQuiz() {
             currentQ = 0;
             score = 0;
             hintUsed = false;
+            timeAdded = false;
+            questionTimes = [];
             showScreen('quizScreen');
             showQuestion();
         }
@@ -517,13 +765,17 @@
             hintUsed = false;
             const q = questions[currentQ];
             
+            // Update UI
             document.getElementById('questionNum').textContent = `Domanda ${currentQ + 1}/${questions.length}`;
+            document.getElementById('currentScore').textContent = `Punteggio: ${score * 10}/${questions.length * 10}`;
             document.getElementById('question').textContent = q.q;
-            document.getElementById('nextBtn').style.display = 'none';
-            document.getElementById('hintBtn').disabled = false;
-            document.getElementById('timeBtn').disabled = false;
-            document.getElementById('skipBtn').disabled = false;
             
+            // Reset powerup buttons
+            document.getElementById('hintCard').classList.remove('disabled');
+            document.getElementById('timeCard').classList.remove('disabled');
+            document.getElementById('skipCard').classList.remove('disabled');
+            
+            // Create options
             const optionsDiv = document.getElementById('options');
             optionsDiv.innerHTML = '';
             
@@ -540,6 +792,7 @@
         
         function startTimer() {
             timeLeft = 20;
+            const questionStartTime = Date.now();
             updateTimer();
             
             timer = setInterval(() => {
@@ -549,7 +802,8 @@
                 if (timeLeft <= 0) {
                     clearInterval(timer);
                     if (!answered) {
-                        selectAnswer(-1);
+                        questionTimes.push((Date.now() - questionStartTime) / 1000);
+                        selectAnswer(-1); // timeout
                     }
                 }
             }, 1000);
@@ -572,26 +826,35 @@
             answered = true;
             clearInterval(timer);
             
+            const questionEndTime = Date.now();
+            const timeTaken = (20 - timeLeft);
+            questionTimes.push(timeTaken);
+            
             const q = questions[currentQ];
             const options = document.querySelectorAll('.option');
             
+            // Show correct answer
             options[q.a].classList.add('correct');
             
+            // Check if answer is correct
             if (idx === q.a) {
                 score++;
+                // Haptic feedback on correct answer
+                if (tg.HapticFeedback) {
+                    tg.HapticFeedback.notificationOccurred('success');
+                }
             } else if (idx >= 0) {
                 options[idx].classList.add('wrong');
+                if (tg.HapticFeedback) {
+                    tg.HapticFeedback.notificationOccurred('error');
+                }
             }
             
+            // Auto advance to next question
             setTimeout(() => {
                 currentQ++;
                 showQuestion();
             }, 2000);
-        }
-        
-        function nextQuestion() {
-            currentQ++;
-            showQuestion();
         }
         
         function endQuiz() {
@@ -599,10 +862,31 @@
             showScreen('resultScreen');
             
             const points = score * 10;
+            const accuracy = Math.round((score / questions.length) * 100);
+            const avgTime = Math.round(questionTimes.reduce((a, b) => a + b, 0) / questionTimes.length);
+            
+            // Update result screen
             document.getElementById('finalScore').textContent = `${score}/${questions.length}`;
             document.getElementById('earnedPoints').textContent = points;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+            document.getElementById('avgTime').textContent = avgTime + 's';
             
+            // Set emoji based on score
+            let emoji = '🎉';
+            if (score === questions.length) emoji = '🏆';
+            else if (score >= 8) emoji = '🌟';
+            else if (score >= 5) emoji = '😊';
+            else emoji = '📚';
+            
+            document.getElementById('resultEmoji').textContent = emoji;
+            
+            // Save data
             saveUserData(points);
+            
+            // Haptic feedback
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.notificationOccurred(score >= 7 ? 'success' : 'warning');
+            }
         }
         
         // ========================================
@@ -611,22 +895,28 @@
         
         function buyHint() {
             if (hintUsed || answered) {
-                tg.showAlert('⚠️ Non puoi usare hint ora!');
+                tg.showAlert('⚠️ Non puoi usare Hint in questo momento!');
                 return;
             }
             
             tg.showPopup({
                 title: '💡 Acquista Hint',
-                message: 'Elimina 2 risposte sbagliate!\n\nPrezzo: 10 Telegram Stars ⭐',
+                message: 'Elimina 2 risposte sbagliate dalla domanda corrente!\n\n💰 Prezzo: 10 Telegram Stars ⭐\n\n⚡ Aumenta le tue possibilità di rispondere correttamente!',
                 buttons: [
-                    {id: 'buy', type: 'default', text: 'Acquista 10 ⭐'},
-                    {id: 'cancel', type: 'cancel', text: 'Annulla'}
+                    {id: 'buy', type: 'default', text: '✅ Acquista 10 ⭐'},
+                    {id: 'cancel', type: 'cancel', text: '❌ Annulla'}
                 ]
             }, (buttonId) => {
                 if (buttonId === 'buy') {
-                    // IN PRODUZIONE: tg.openInvoice() per vero pagamento
+                    // IN PRODUZIONE: Usa tg.openInvoice() per vero pagamento
+                    // Per ora simuliamo l'acquisto
                     applyHint();
-                    tg.showAlert('✅ Hint acquistato! 2 risposte sbagliate eliminate.');
+                    document.getElementById('hintCard').classList.add('disabled');
+                    tg.showAlert('✅ Hint acquistato!\n\n2 risposte sbagliate sono state eliminate.');
+                    
+                    if (tg.HapticFeedback) {
+                        tg.HapticFeedback.notificationOccurred('success');
+                    }
                 }
             });
         }
@@ -635,70 +925,78 @@
             if (hintUsed || answered) return;
             
             hintUsed = true;
-            document.getElementById('hintBtn').disabled = true;
-            
             const q = questions[currentQ];
             const options = document.querySelectorAll('.option');
             let removed = 0;
             
             options.forEach((opt, idx) => {
                 if (idx !== q.a && removed < 2) {
-                    opt.style.opacity = '0.3';
-                    opt.style.pointerEvents = 'none';
-                    opt.style.textDecoration = 'line-through';
+                    opt.classList.add('eliminated');
                     removed++;
                 }
             });
         }
         
         function buyTime() {
-            if (answered) {
-                tg.showAlert('⚠️ Non puoi comprare tempo ora!');
+            if (answered || timeAdded) {
+                tg.showAlert('⚠️ Non puoi aggiungere tempo in questo momento!');
                 return;
             }
             
-            if (timeLeft >= 30) {
+            if (timeLeft >= 25) {
                 tg.showAlert('⚠️ Hai già abbastanza tempo!');
                 return;
             }
             
             tg.showPopup({
                 title: '⏰ Acquista Tempo Extra',
-                message: 'Aggiungi 10 secondi al timer!\n\nPrezzo: 5 Telegram Stars ⭐',
+                message: 'Aggiungi 10 secondi al timer della domanda corrente!\n\n💰 Prezzo: 5 Telegram Stars ⭐\n\n⏱️ Prendi più tempo per pensare alla risposta!',
                 buttons: [
-                    {id: 'buy', type: 'default', text: 'Acquista 5 ⭐'},
-                    {id: 'cancel', type: 'cancel', text: 'Annulla'}
+                    {id: 'buy', type: 'default', text: '✅ Acquista 5 ⭐'},
+                    {id: 'cancel', type: 'cancel', text: '❌ Annulla'}
                 ]
             }, (buttonId) => {
                 if (buttonId === 'buy') {
-                    // IN PRODUZIONE: tg.openInvoice() per vero pagamento
+                    // IN PRODUZIONE: Usa tg.openInvoice() per vero pagamento
                     timeLeft += 10;
+                    timeAdded = true;
                     updateTimer();
-                    document.getElementById('timeBtn').disabled = true;
-                    tg.showAlert('✅ +10 secondi aggiunti al timer!');
+                    document.getElementById('timeCard').classList.add('disabled');
+                    tg.showAlert('✅ Tempo aggiunto!\n\n+10 secondi al timer.');
+                    
+                    if (tg.HapticFeedback) {
+                        tg.HapticFeedback.notificationOccurred('success');
+                    }
                 }
             });
         }
         
         function buySkip() {
             if (answered) {
-                tg.showAlert('⚠️ Non puoi saltare ora!');
+                tg.showAlert('⚠️ Non puoi saltare in questo momento!');
                 return;
             }
             
             tg.showPopup({
                 title: '⏭️ Salta Domanda',
-                message: 'Salta questa domanda senza perdere il quiz!\n(Non guadagnerai punti per questa domanda)\n\nPrezzo: 8 Telegram Stars ⭐',
+                message: 'Salta questa domanda senza perdere il quiz!\n\n⚠️ Non guadagnerai punti per questa domanda.\n\n💰 Prezzo: 8 Telegram Stars ⭐',
                 buttons: [
-                    {id: 'buy', type: 'default', text: 'Salta 8 ⭐'},
-                    {id: 'cancel', type: 'cancel', text: 'Annulla'}
+                    {id: 'buy', type: 'default', text: '✅ Salta 8 ⭐'},
+                    {id: 'cancel', type: 'cancel', text: '❌ Annulla'}
                 ]
             }, (buttonId) => {
                 if (buttonId === 'buy') {
-                    // IN PRODUZIONE: tg.openInvoice() per vero pagamento
+                    // IN PRODUZIONE: Usa tg.openInvoice() per vero pagamento
                     clearInterval(timer);
                     answered = true;
+                    questionTimes.push(0);
+                    
                     tg.showAlert('✅ Domanda saltata!');
+                    
+                    if (tg.HapticFeedback) {
+                        tg.HapticFeedback.impactOccurred('medium');
+                    }
+                    
                     setTimeout(() => {
                         currentQ++;
                         showQuestion();
@@ -708,9 +1006,8 @@
         }
         
         // ========================================
-        // SOCIAL & NAVIGATION
+        // LEADERBOARD
         // ========================================
-        
         function showLeaderboard() {
             showScreen('leaderboardScreen');
             
@@ -719,37 +1016,66 @@
                 const listDiv = document.getElementById('leaderboardList');
                 
                 if (lb.length === 0) {
-                    listDiv.innerHTML = '<p style="text-align:center; padding: 40px; color: #999;">Nessun giocatore ancora. Sii il primo! 🏆</p>';
+                    listDiv.innerHTML = '<p style="text-align:center; padding: 50px; color: #999; font-size: 1.1em;">📊 Nessun giocatore ancora.<br><br>🏆 Sii il primo in classifica!</p>';
                     return;
                 }
                 
-                listDiv.innerHTML = lb.map((u, i) => `
-                    <div class="leaderboard-item">
-                        <div>
-                            <span class="rank">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1)}</span>
-                            <span>${u.name}</span>
+                listDiv.innerHTML = lb.map((u, i) => {
+                    let rankClass = 'normal';
+                    let rankText = `#${i + 1}`;
+                    
+                    if (i === 0) { rankClass = 'gold'; rankText = '🥇'; }
+                    else if (i === 1) { rankClass = 'silver'; rankText = '🥈'; }
+                    else if (i === 2) { rankClass = 'bronze'; rankText = '🥉'; }
+                    
+                    return `
+                        <div class="leaderboard-item" style="${u.id === user.id ? 'background: #e8eeff; border: 2px solid #667eea;' : ''}">
+                            <div class="leaderboard-left">
+                                <span class="rank ${rankClass}">${rankText}</span>
+                                <div>
+                                    <div class="player-name">${u.name}${u.id === user.id ? ' (Tu)' : ''}</div>
+                                    ${u.streak > 0 ? `<div style="font-size: 0.85em; color: #ff6b35;">🔥 ${u.streak} giorni</div>` : ''}
+                                </div>
+                            </div>
+                            <div class="player-score">${u.total}</div>
                         </div>
-                        <div style="font-weight: bold; color: #ffd700;">${u.total} pts</div>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
                 
             } catch(e) {
-                document.getElementById('leaderboardList').innerHTML = '<p style="text-align:center; padding: 40px; color: #ff6b6b;">Errore caricamento classifica</p>';
+                console.error('Leaderboard error:', e);
+                document.getElementById('leaderboardList').innerHTML = '<p style="text-align:center; padding: 50px; color: #ff6b6b; font-size: 1.1em;">❌ Errore nel caricamento della classifica</p>';
             }
         }
         
+        // ========================================
+        // SOCIAL SHARING
+        // ========================================
         function shareGame() {
             const url = 'https://t.me/quiz_daily_italia_bot';
-            const text = `🧠 QuizMania - Il quiz quotidiano italiano!\n\n🎮 Gioca ora e sfida i tuoi amici!\n💡 Usa powerup con Telegram Stars ⭐`;
+            const text = `🧠 *QuizMania* - Il Quiz Quotidiano Italiano!\n\n🎮 Gioca gratis ogni giorno\n💡 Usa power-up con Telegram Stars ⭐\n🏆 Scala la classifica\n🔥 Mantieni lo streak!\n\n👉 Gioca ora e sfida i tuoi amici!`;
             
             tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`);
         }
         
         function shareScore() {
             const url = 'https://t.me/quiz_daily_italia_bot';
-            const text = `🎉 Ho completato QuizMania!\n\n📊 Punteggio: ${score}/${questions.length}\n⭐ Punti: ${score * 10}\n\n🧠 Riesci a battermi? Gioca ora!`;
+            const userData = loadUserData();
             
-            tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`);
+            let message = `🎉 Ho completato *QuizMania*!\n\n`;
+            message += `📊 Punteggio: ${score}/${questions.length}\n`;
+            message += `⭐ Punti totali: ${userData.total || 0}\n`;
+            message += `🔥 Streak: ${userData.streak || 0} giorni\n\n`;
+            
+            if (score === questions.length) {
+                message += `🏆 Punteggio PERFETTO!\n\n`;
+            } else if (score >= 8) {
+                message += `🌟 Ottimo risultato!\n\n`;
+            }
+            
+            message += `🧠 Riesci a battermi? Gioca ora!`;
+            
+            tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(message)}`);
         }
         
         function goHome() {
@@ -757,13 +1083,32 @@
             loadUserData();
         }
         
-        // Initialize
+        // ========================================
+        // INITIALIZATION
+        // ========================================
         loadUserData();
         
-        // Show welcome message
-        if (tg.initDataUnsafe.user) {
-            console.log('👋 Benvenuto', tg.initDataUnsafe.user.first_name);
+        // Welcome message
+        if (tg.initDataUnsafe.user && tg.initDataUnsafe.user.first_name) {
+            console.log('👋 Benvenuto in QuizMania,', tg.initDataUnsafe.user.first_name + '!');
         }
+        
+        // Ready signal
+        tg.ready();
     </script>
 </body>
 </html>
+```
+
+---
+
+## 📋 GUIDA OPERATIVA COMPLETA
+
+### **FASE 1: LANCIO (Settimane 1-2)**
+
+**Setup Tecnico:**
+1. Carica il file su GitHub Pages
+2. Configura il bot Telegram:
+```
+   @BotFather → /setmenubutton
+   Aggiungi: "🎮 Gioca Ora" → URL del tuo GitHub Pages
