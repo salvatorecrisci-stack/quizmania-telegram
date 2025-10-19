@@ -36,7 +36,6 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
-        /* ========== HEADER ========== */
         .header {
             text-align: center;
             margin-bottom: 25px;
@@ -57,7 +56,6 @@
             opacity: 0.9;
         }
         
-        /* ========== STATS ========== */
         .stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -86,7 +84,6 @@
             margin-top: 5px;
         }
         
-        /* ========== TELEGRAM STARS SHOP (MOLTO VISIBILE) ========== */
         .stars-shop {
             background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
             border-radius: 20px;
@@ -179,7 +176,6 @@
             margin-top: 3px;
         }
         
-        /* ========== QUIZ CARD ========== */
         .quiz-card {
             background: white;
             color: #333;
@@ -299,7 +295,6 @@
             75% { transform: translateX(5px); }
         }
         
-        /* ========== BUTTONS ========== */
         .btn {
             width: 100%;
             padding: 16px;
@@ -336,7 +331,6 @@
             background: rgba(255, 255, 255, 0.35);
         }
         
-        /* ========== SCREENS ========== */
         .screen {
             display: none;
         }
@@ -351,7 +345,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* ========== RESULT SCREEN ========== */
         .result {
             text-align: center;
             padding: 30px 0;
@@ -395,7 +388,6 @@
             margin: 10px 0;
         }
         
-        /* ========== LEADERBOARD ========== */
         .leaderboard {
             background: white;
             color: #333;
@@ -452,7 +444,6 @@
             color: #ffd700;
         }
         
-        /* ========== LOADING ========== */
         .loading {
             text-align: center;
             padding: 50px 0;
@@ -473,7 +464,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* ========== RESPONSIVE ========== */
         @media (max-width: 400px) {
             .container {
                 padding: 20px;
@@ -495,7 +485,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- ==================== HOME SCREEN ==================== -->
         <div id="homeScreen" class="screen active">
             <div class="header">
                 <h1>🧠 QuizMania</h1>
@@ -518,9 +507,7 @@
             <button class="btn btn-secondary" onclick="shareGame()">📤 Condividi con Amici</button>
         </div>
 
-        <!-- ==================== QUIZ SCREEN ==================== -->
         <div id="quizScreen" class="screen">
-            <!-- TELEGRAM STARS SHOP -->
             <div class="stars-shop">
                 <div class="stars-title">
                     <span class="star-icon">⭐</span>
@@ -549,7 +536,6 @@
                 </div>
             </div>
             
-            <!-- QUIZ CARD -->
             <div class="quiz-card">
                 <div class="question-header">
                     <div class="question-number" id="questionNum">Domanda 1/10</div>
@@ -568,7 +554,6 @@
             </div>
         </div>
 
-        <!-- ==================== RESULT SCREEN ==================== -->
         <div id="resultScreen" class="screen">
             <div class="result">
                 <div class="result-icon" id="resultEmoji">🎉</div>
@@ -593,7 +578,6 @@
             <button class="btn btn-secondary" onclick="goHome()">🏠 Torna alla Home</button>
         </div>
 
-        <!-- ==================== LEADERBOARD SCREEN ==================== -->
         <div id="leaderboardScreen" class="screen">
             <div class="header">
                 <h1>🏆 Classifica</h1>
@@ -612,9 +596,6 @@
     </div>
 
     <script>
-        // ========================================
-        // TELEGRAM WEB APP INITIALIZATION
-        // ========================================
         const tg = window.Telegram.WebApp;
         tg.expand();
         tg.setHeaderColor('#667eea');
@@ -627,9 +608,6 @@
             username: 'player' + Math.floor(Math.random() * 1000)
         };
         
-        // ========================================
-        // QUESTIONS DATABASE
-        // ========================================
         const questions = [
             {q: "Qual è la capitale d'Italia?", o: ["Roma", "Milano", "Napoli", "Torino"], a: 0},
             {q: "Chi ha dipinto la Gioconda?", o: ["Leonardo da Vinci", "Michelangelo", "Raffaello", "Caravaggio"], a: 0},
@@ -643,9 +621,6 @@
             {q: "Quante regioni ha l'Italia?", o: ["20", "19", "21", "18"], a: 0}
         ];
         
-        // ========================================
-        // GAME STATE
-        // ========================================
         let currentQ = 0;
         let score = 0;
         let timer;
@@ -655,9 +630,6 @@
         let answered = false;
         let questionTimes = [];
         
-        // ========================================
-        // USER DATA MANAGEMENT
-        // ========================================
         function loadUserData() {
             try {
                 const data = JSON.parse(localStorage.getItem('qm_' + user.id) || '{}');
@@ -734,17 +706,11 @@
             }
         }
         
-        // ========================================
-        // SCREEN NAVIGATION
-        // ========================================
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
         }
         
-        // ========================================
-        // QUIZ LOGIC
-        // ========================================
         function startQuiz() {
             currentQ = 0;
             score = 0;
@@ -765,17 +731,14 @@
             hintUsed = false;
             const q = questions[currentQ];
             
-            // Update UI
             document.getElementById('questionNum').textContent = `Domanda ${currentQ + 1}/${questions.length}`;
             document.getElementById('currentScore').textContent = `Punteggio: ${score * 10}/${questions.length * 10}`;
             document.getElementById('question').textContent = q.q;
             
-            // Reset powerup buttons
             document.getElementById('hintCard').classList.remove('disabled');
             document.getElementById('timeCard').classList.remove('disabled');
             document.getElementById('skipCard').classList.remove('disabled');
             
-            // Create options
             const optionsDiv = document.getElementById('options');
             optionsDiv.innerHTML = '';
             
@@ -803,7 +766,7 @@
                     clearInterval(timer);
                     if (!answered) {
                         questionTimes.push((Date.now() - questionStartTime) / 1000);
-                        selectAnswer(-1); // timeout
+                        selectAnswer(-1);
                     }
                 }
             }, 1000);
@@ -833,13 +796,10 @@
             const q = questions[currentQ];
             const options = document.querySelectorAll('.option');
             
-            // Show correct answer
             options[q.a].classList.add('correct');
             
-            // Check if answer is correct
             if (idx === q.a) {
                 score++;
-                // Haptic feedback on correct answer
                 if (tg.HapticFeedback) {
                     tg.HapticFeedback.notificationOccurred('success');
                 }
@@ -850,7 +810,6 @@
                 }
             }
             
-            // Auto advance to next question
             setTimeout(() => {
                 currentQ++;
                 showQuestion();
@@ -865,13 +824,11 @@
             const accuracy = Math.round((score / questions.length) * 100);
             const avgTime = Math.round(questionTimes.reduce((a, b) => a + b, 0) / questionTimes.length);
             
-            // Update result screen
             document.getElementById('finalScore').textContent = `${score}/${questions.length}`;
             document.getElementById('earnedPoints').textContent = points;
             document.getElementById('accuracy').textContent = accuracy + '%';
             document.getElementById('avgTime').textContent = avgTime + 's';
             
-            // Set emoji based on score
             let emoji = '🎉';
             if (score === questions.length) emoji = '🏆';
             else if (score >= 8) emoji = '🌟';
@@ -880,18 +837,12 @@
             
             document.getElementById('resultEmoji').textContent = emoji;
             
-            // Save data
             saveUserData(points);
             
-            // Haptic feedback
             if (tg.HapticFeedback) {
                 tg.HapticFeedback.notificationOccurred(score >= 7 ? 'success' : 'warning');
             }
         }
-        
-        // ========================================
-        // TELEGRAM STARS MONETIZATION
-        // ========================================
         
         function buyHint() {
             if (hintUsed || answered) {
@@ -908,8 +859,6 @@
                 ]
             }, (buttonId) => {
                 if (buttonId === 'buy') {
-                    // IN PRODUZIONE: Usa tg.openInvoice() per vero pagamento
-                    // Per ora simuliamo l'acquisto
                     applyHint();
                     document.getElementById('hintCard').classList.add('disabled');
                     tg.showAlert('✅ Hint acquistato!\n\n2 risposte sbagliate sono state eliminate.');
@@ -957,7 +906,6 @@
                 ]
             }, (buttonId) => {
                 if (buttonId === 'buy') {
-                    // IN PRODUZIONE: Usa tg.openInvoice() per vero pagamento
                     timeLeft += 10;
                     timeAdded = true;
                     updateTimer();
@@ -986,7 +934,6 @@
                 ]
             }, (buttonId) => {
                 if (buttonId === 'buy') {
-                    // IN PRODUZIONE: Usa tg.openInvoice() per vero pagamento
                     clearInterval(timer);
                     answered = true;
                     questionTimes.push(0);
@@ -1005,9 +952,6 @@
             });
         }
         
-        // ========================================
-        // LEADERBOARD
-        // ========================================
         function showLeaderboard() {
             showScreen('leaderboardScreen');
             
@@ -1048,9 +992,6 @@
             }
         }
         
-        // ========================================
-        // SOCIAL SHARING
-        // ========================================
         function shareGame() {
             const url = 'https://t.me/quiz_daily_italia_bot';
             const text = `🧠 *QuizMania* - Il Quiz Quotidiano Italiano!\n\n🎮 Gioca gratis ogni giorno\n💡 Usa power-up con Telegram Stars ⭐\n🏆 Scala la classifica\n🔥 Mantieni lo streak!\n\n👉 Gioca ora e sfida i tuoi amici!`;
@@ -1083,32 +1024,13 @@
             loadUserData();
         }
         
-        // ========================================
-        // INITIALIZATION
-        // ========================================
         loadUserData();
         
-        // Welcome message
         if (tg.initDataUnsafe.user && tg.initDataUnsafe.user.first_name) {
             console.log('👋 Benvenuto in QuizMania,', tg.initDataUnsafe.user.first_name + '!');
         }
         
-        // Ready signal
         tg.ready();
     </script>
 </body>
 </html>
-```
-
----
-
-## 📋 GUIDA OPERATIVA COMPLETA
-
-### **FASE 1: LANCIO (Settimane 1-2)**
-
-**Setup Tecnico:**
-1. Carica il file su GitHub Pages
-2. Configura il bot Telegram:
-```
-   @BotFather → /setmenubutton
-   Aggiungi: "🎮 Gioca Ora" → URL del tuo GitHub Pages
