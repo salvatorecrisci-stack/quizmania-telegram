@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Mania Daily</title>
+    <title>QuizMania Daily</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
@@ -11,624 +11,758 @@
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
-            justify-content: center;
             align-items: center;
-            padding: 20px;
-        }
-
-        .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            max-width: 500px;
-            width: 100%;
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            justify-content: center;
             color: white;
             padding: 20px;
+        }
+        
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header {
             text-align: center;
+            margin-bottom: 30px;
         }
-
+        
         .header h1 {
-            font-size: 24px;
+            font-size: 2.5em;
             margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
-
+        
         .stats {
             display: flex;
             justify-content: space-around;
-            margin-top: 15px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
         }
-
-        .stat {
+        
+        .stat-item {
             text-align: center;
         }
-
+        
         .stat-value {
-            font-size: 24px;
+            font-size: 1.8em;
             font-weight: bold;
+            color: #ffd700;
         }
-
+        
         .stat-label {
-            font-size: 12px;
-            opacity: 0.9;
+            font-size: 0.8em;
+            opacity: 0.8;
         }
-
-        .screen {
-            display: none;
-            padding: 30px;
-        }
-
-        .screen.active {
-            display: block;
-        }
-
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 20px;
-            transition: transform 0.2s;
-        }
-
-        .btn:hover {
-            transform: scale(1.05);
-        }
-
-        .btn:active {
-            transform: scale(0.95);
-        }
-
-        .welcome-text {
-            text-align: center;
+        
+        .quiz-card {
+            background: white;
             color: #333;
-            line-height: 1.6;
+            border-radius: 15px;
+            padding: 25px;
             margin-bottom: 20px;
         }
-
-        .welcome-text h2 {
+        
+        .question-number {
+            font-size: 0.9em;
             color: #667eea;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
-
-        .question-counter {
-            text-align: center;
-            color: #667eea;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-
+        
         .question {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
+            font-size: 1.3em;
             margin-bottom: 20px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #333;
-            text-align: center;
+            font-weight: 500;
         }
-
+        
         .timer {
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
+            gap: 10px;
             margin-bottom: 20px;
-        }
-
-        .timer-circle {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-size: 24px;
+            font-size: 1.2em;
             font-weight: bold;
-            position: relative;
+            color: #667eea;
         }
-
-        .timer-circle.warning {
-            animation: pulse 0.5s infinite;
+        
+        .timer.warning {
+            color: #ff6b6b;
+            animation: pulse 1s infinite;
         }
-
+        
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.1); }
         }
-
+        
         .options {
-            display: grid;
-            gap: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
-
+        
         .option {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            padding: 15px;
+            background: #f5f5f5;
+            border: 2px solid transparent;
             border-radius: 10px;
+            padding: 15px;
             cursor: pointer;
-            transition: all 0.2s;
-            font-size: 16px;
+            transition: all 0.3s;
+            font-size: 1em;
         }
-
+        
         .option:hover {
-            background: #e9ecef;
-            border-color: #667eea;
+            background: #e8e8e8;
+            transform: translateX(5px);
         }
-
+        
+        .option.selected {
+            border-color: #667eea;
+            background: #e8eeff;
+        }
+        
         .option.correct {
             background: #d4edda;
             border-color: #28a745;
-            animation: correctAnim 0.5s;
         }
-
+        
         .option.wrong {
             background: #f8d7da;
             border-color: #dc3545;
-            animation: wrongAnim 0.5s;
         }
-
-        .option.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        
+        /* TELEGRAM STARS POWERUPS */
+        .powerups {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 215, 0, 0.2);
+            border-radius: 15px;
+            border: 2px solid rgba(255, 215, 0, 0.5);
         }
-
-        @keyframes correctAnim {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        @keyframes wrongAnim {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-        }
-
-        .hint-btn {
-            background: #ffc107;
+        
+        .powerup-btn {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
             color: #333;
-            padding: 10px 20px;
             border: none;
-            border-radius: 8px;
+            padding: 15px 10px;
+            border-radius: 12px;
             cursor: pointer;
+            font-size: 0.9em;
             font-weight: bold;
-            margin-bottom: 20px;
-            width: 100%;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
         }
-
-        .hint-btn:disabled {
+        
+        .powerup-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
+        }
+        
+        .powerup-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
-
-        .results {
-            text-align: center;
+        
+        .powerup-icon {
+            font-size: 1.8em;
+            display: block;
+            margin-bottom: 5px;
         }
-
-        .score-big {
-            font-size: 72px;
+        
+        .powerup-price {
+            font-size: 0.75em;
+            color: #666;
+            display: block;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1em;
             font-weight: bold;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin: 20px 0;
-        }
-
-        .message {
-            font-size: 20px;
-            color: #333;
-            margin-bottom: 20px;
-        }
-
-        .share-btn {
-            background: #0088cc;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
             margin-top: 10px;
         }
-
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #333;
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 15px 20px;
-            border-radius: 10px;
-            animation: slideIn 0.3s;
-            z-index: 1000;
         }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
-
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+        }
+        
+        .screen {
+            display: none;
+        }
+        
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .result {
+            text-align: center;
+            padding: 30px 0;
+        }
+        
+        .result-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        
+        .result-title {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .result-score {
+            font-size: 3em;
+            color: #ffd700;
+            margin-bottom: 20px;
+        }
+        
+        .leaderboard {
+            background: white;
+            color: #333;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .leaderboard-item:last-child {
+            border-bottom: none;
+        }
+        
+        .rank {
+            font-weight: bold;
+            color: #667eea;
+            min-width: 30px;
+        }
+        
         .loading {
             text-align: center;
-            padding: 40px;
+            padding: 50px 0;
         }
-
+        
         .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
             width: 50px;
             height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #667eea;
-            border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 0 auto 20px;
         }
-
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        .stars-balance {
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 215, 0, 0.2);
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🎯 Quiz Mania Daily</h1>
+        <!-- HOME SCREEN -->
+        <div id="homeScreen" class="screen active">
+            <div class="header">
+                <h1>🧠 QuizMania</h1>
+                <p>Il quiz quotidiano italiano</p>
+            </div>
+            
             <div class="stats">
-                <div class="stat">
+                <div class="stat-item">
                     <div class="stat-value" id="totalScore">0</div>
                     <div class="stat-label">Punti Totali</div>
                 </div>
-                <div class="stat">
-                    <div class="stat-value" id="streak">0</div>
+                <div class="stat-item">
+                    <div class="stat-value" id="streakCount">0</div>
                     <div class="stat-label">🔥 Streak</div>
                 </div>
             </div>
-        </div>
-
-        <!-- Loading Screen -->
-        <div id="loadingScreen" class="screen active">
-            <div class="loading">
-                <div class="spinner"></div>
-                <p>Caricamento quiz...</p>
-            </div>
-        </div>
-
-        <!-- Welcome Screen -->
-        <div id="welcomeScreen" class="screen">
-            <div class="welcome-text">
-                <h2>Benvenuto! 👋</h2>
-                <p>Rispondi a 10 domande nel minor tempo possibile!</p>
-                <p>• Ogni risposta corretta: <strong>+10 punti</strong></p>
-                <p>• Bonus tempo: <strong>+1 punto per secondo rimanente</strong></p>
-                <p>• Usa l'aiuto per eliminare 2 risposte sbagliate</p>
-            </div>
-            <button class="btn" onclick="startQuiz()">Inizia Quiz 🚀</button>
-        </div>
-
-        <!-- Quiz Screen -->
-        <div id="quizScreen" class="screen">
-            <div class="question-counter" id="questionCounter">Domanda 1/10</div>
             
-            <div class="timer">
-                <div class="timer-circle" id="timer">20</div>
-            </div>
-
-            <div class="question" id="question">Caricamento domanda...</div>
-
-            <button class="hint-btn" id="hintBtn" onclick="useHint()">💡 Usa Aiuto (1 disponibile)</button>
-
-            <div class="options" id="options"></div>
+            <button class="btn btn-primary" onclick="startQuiz()">🎮 Inizia Quiz</button>
+            <button class="btn btn-secondary" onclick="showLeaderboard()">🏆 Classifica</button>
+            <button class="btn btn-secondary" onclick="shareGame()">📤 Condividi</button>
         </div>
 
-        <!-- Results Screen -->
-        <div id="resultsScreen" class="screen">
-            <div class="results">
-                <h2>Quiz Completato! 🎉</h2>
-                <div class="score-big" id="finalScore">0</div>
-                <div class="message" id="resultMessage">Ottimo lavoro!</div>
-                
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
-                    <p><strong>Risposte corrette:</strong> <span id="correctAnswers">0</span>/10</p>
-                    <p><strong>Tempo totale:</strong> <span id="totalTime">0</span>s</p>
-                    <p><strong>Bonus tempo:</strong> +<span id="timeBonus">0</span> punti</p>
-                </div>
-
-                <button class="btn" onclick="resetQuiz()">Gioca Ancora 🔄</button>
-                <button class="btn share-btn" onclick="shareResults()">Condividi su Telegram 📤</button>
+        <!-- QUIZ SCREEN -->
+        <div id="quizScreen" class="screen">
+            <!-- TELEGRAM STARS SHOP -->
+            <div class="stars-balance">
+                ⭐ Telegram Stars disponibili
             </div>
+            
+            <div class="powerups">
+                <button class="powerup-btn" id="hintBtn" onclick="buyHint()">
+                    <span class="powerup-icon">💡</span>
+                    <span>Hint</span>
+                    <span class="powerup-price">10 ⭐</span>
+                </button>
+                <button class="powerup-btn" id="timeBtn" onclick="buyTime()">
+                    <span class="powerup-icon">⏰</span>
+                    <span>+10 sec</span>
+                    <span class="powerup-price">5 ⭐</span>
+                </button>
+                <button class="powerup-btn" id="skipBtn" onclick="buySkip()">
+                    <span class="powerup-icon">⏭️</span>
+                    <span>Skip</span>
+                    <span class="powerup-price">8 ⭐</span>
+                </button>
+            </div>
+            
+            <div class="quiz-card">
+                <div class="question-number" id="questionNum">Domanda 1/10</div>
+                <div class="timer" id="timer">
+                    <span>⏱️</span>
+                    <span id="timeLeft">20</span>
+                </div>
+                <div class="question" id="question">Caricamento...</div>
+                <div class="options" id="options"></div>
+            </div>
+            
+            <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" style="display:none;">
+                Prossima Domanda →
+            </button>
+        </div>
+
+        <!-- RESULT SCREEN -->
+        <div id="resultScreen" class="screen">
+            <div class="result">
+                <div class="result-icon">🎉</div>
+                <div class="result-title">Quiz Completato!</div>
+                <div class="result-score" id="finalScore">0/10</div>
+                <div style="margin-bottom: 20px;">
+                    <div style="font-size: 1.2em;">Punti guadagnati: <span id="earnedPoints" style="color: #ffd700;">0</span></div>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" onclick="shareScore()">📤 Condividi Risultato</button>
+            <button class="btn btn-secondary" onclick="goHome()">🏠 Torna alla Home</button>
+        </div>
+
+        <!-- LEADERBOARD SCREEN -->
+        <div id="leaderboardScreen" class="screen">
+            <div class="header">
+                <h1>🏆 Classifica</h1>
+            </div>
+            
+            <div class="leaderboard" id="leaderboardList">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Caricamento classifica...</p>
+                </div>
+            </div>
+            
+            <button class="btn btn-secondary" onclick="goHome()">🏠 Torna alla Home</button>
         </div>
     </div>
 
     <script>
-        // Initialize Telegram WebApp
         const tg = window.Telegram.WebApp;
         tg.expand();
-        tg.ready();
-
-        // Get user ID (works both in Telegram and browser)
-        let userId = 'demo';
-        try {
-            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                userId = tg.initDataUnsafe.user.id.toString();
-            } else {
-                userId = 'demo_' + Date.now();
-            }
-        } catch(e) {
-            userId = 'demo_' + Date.now();
-        }
-
-        console.log('User ID:', userId);
-
-        // Quiz questions
+        tg.setHeaderColor('#667eea');
+        tg.setBackgroundColor('#667eea');
+        
+        const user = tg.initDataUnsafe.user || {id: 'demo_' + Date.now(), first_name: 'Player'};
+        
         const questions = [
-            { q: "Capitale d'Italia?", opts: ["Milano", "Roma", "Napoli", "Firenze"], correct: 1 },
-            { q: "Chi ha dipinto la Gioconda?", opts: ["Michelangelo", "Raffaello", "Leonardo da Vinci", "Caravaggio"], correct: 2 },
-            { q: "Quanti continenti esistono?", opts: ["5", "6", "7", "8"], correct: 2 },
-            { q: "Pianeta più grande del sistema solare?", opts: ["Saturno", "Giove", "Nettuno", "Urano"], correct: 1 },
-            { q: "Anno caduta del Muro di Berlino?", opts: ["1987", "1989", "1991", "1993"], correct: 1 },
-            { q: "Chi ha scritto La Divina Commedia?", opts: ["Petrarca", "Boccaccio", "Dante", "Ariosto"], correct: 2 },
-            { q: "Oceano più grande?", opts: ["Atlantico", "Indiano", "Artico", "Pacifico"], correct: 3 },
-            { q: "Quante regioni in Italia?", opts: ["18", "19", "20", "21"], correct: 2 },
-            { q: "Chi ha inventato la lampadina?", opts: ["Tesla", "Edison", "Franklin", "Bell"], correct: 1 },
-            { q: "Fiume più lungo d'Italia?", opts: ["Tevere", "Arno", "Po", "Adige"], correct: 2 }
+            {q: "Qual è la capitale d'Italia?", o: ["Roma", "Milano", "Napoli", "Torino"], a: 0},
+            {q: "Chi ha dipinto la Gioconda?", o: ["Leonardo da Vinci", "Michelangelo", "Raffaello", "Caravaggio"], a: 0},
+            {q: "Qual è il fiume più lungo d'Italia?", o: ["Po", "Tevere", "Arno", "Adige"], a: 0},
+            {q: "In che anno è caduto il Muro di Berlino?", o: ["1989", "1991", "1985", "1987"], a: 0},
+            {q: "Quanti sono i continenti?", o: ["7", "5", "6", "8"], a: 0},
+            {q: "Qual è l'elemento chimico con simbolo O?", o: ["Ossigeno", "Oro", "Osmio", "Oganesson"], a: 0},
+            {q: "Chi ha scritto la Divina Commedia?", o: ["Dante Alighieri", "Petrarca", "Boccaccio", "Ariosto"], a: 0},
+            {q: "Qual è il pianeta più grande del sistema solare?", o: ["Giove", "Saturno", "Urano", "Nettuno"], a: 0},
+            {q: "In che anno Cristoforo Colombo scoprì l'America?", o: ["1492", "1498", "1500", "1485"], a: 0},
+            {q: "Quante regioni ha l'Italia?", o: ["20", "19", "21", "18"], a: 0}
         ];
-
-        // Game state
+        
         let currentQ = 0;
         let score = 0;
-        let correctCount = 0;
+        let timer;
         let timeLeft = 20;
-        let timerInterval = null;
         let hintUsed = false;
-        let startTime = Date.now();
-        let totalTimeUsed = 0;
-
-        // Initialize
-        setTimeout(() => {
-            loadUserData();
-            showScreen('welcomeScreen');
-        }, 1000);
-
-        function showScreen(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-        }
-
-        function showNotification(msg) {
-            const notif = document.createElement('div');
-            notif.className = 'notification';
-            notif.textContent = msg;
-            document.body.appendChild(notif);
-            setTimeout(() => notif.remove(), 3000);
-        }
-
+        let answered = false;
+        
         function loadUserData() {
             try {
-                const key = 'qm_' + userId;
-                const data = JSON.parse(localStorage.getItem(key) || '{}');
-                
-                console.log('Loading data for key:', key);
-                console.log('Data loaded:', data);
-                
+                const data = JSON.parse(localStorage.getItem('qm_' + user.id) || '{}');
                 document.getElementById('totalScore').textContent = data.total || 0;
-                document.getElementById('streak').textContent = data.streak || 0;
+                document.getElementById('streakCount').textContent = data.streak || 0;
             } catch(e) {
                 console.error('Load error:', e);
             }
         }
-
+        
         function saveUserData(pts) {
             try {
-                const key = 'qm_' + userId;
-                let data = JSON.parse(localStorage.getItem(key) || '{}');
-                
-                // Update total score
+                let data = JSON.parse(localStorage.getItem('qm_' + user.id) || '{}');
                 data.total = (data.total || 0) + pts;
+                data.name = user.first_name || 'Player';
                 
-                // Update streak
                 const today = new Date().toDateString();
+                const lastPlay = data.lastPlay || '';
+                
                 const yesterday = new Date();
                 yesterday.setDate(yesterday.getDate() - 1);
                 
-                if (data.lastPlay === yesterday.toDateString()) {
+                if (lastPlay === yesterday.toDateString()) {
                     data.streak = (data.streak || 0) + 1;
-                } else if (data.lastPlay !== today) {
+                } else if (lastPlay !== today) {
                     data.streak = 1;
                 }
                 
                 data.lastPlay = today;
+                localStorage.setItem('qm_' + user.id, JSON.stringify(data));
                 
-                localStorage.setItem(key, JSON.stringify(data));
-                
-                console.log('Saving data for key:', key);
-                console.log('Data saved:', data);
-                
-                // Reload display
+                updateLeaderboard(data);
                 loadUserData();
-                
-                showNotification(`+${pts} punti! 🎉`);
             } catch(e) {
                 console.error('Save error:', e);
             }
         }
-
+        
+        function updateLeaderboard(userData) {
+            try {
+                let lb = JSON.parse(localStorage.getItem('qm_leaderboard') || '[]');
+                const idx = lb.findIndex(u => u.id === user.id);
+                
+                if (idx >= 0) {
+                    lb[idx] = {id: user.id, name: userData.name, total: userData.total};
+                } else {
+                    lb.push({id: user.id, name: userData.name, total: userData.total});
+                }
+                
+                lb.sort((a, b) => b.total - a.total);
+                lb = lb.slice(0, 50);
+                
+                localStorage.setItem('qm_leaderboard', JSON.stringify(lb));
+            } catch(e) {
+                console.error('Leaderboard error:', e);
+            }
+        }
+        
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+        
         function startQuiz() {
             currentQ = 0;
             score = 0;
-            correctCount = 0;
             hintUsed = false;
-            startTime = Date.now();
-            totalTimeUsed = 0;
             showScreen('quizScreen');
-            loadQuestion();
+            showQuestion();
         }
-
-        function loadQuestion() {
+        
+        function showQuestion() {
             if (currentQ >= questions.length) {
-                showResults();
+                endQuiz();
                 return;
             }
-
+            
+            answered = false;
+            hintUsed = false;
             const q = questions[currentQ];
-            document.getElementById('questionCounter').textContent = `Domanda ${currentQ + 1}/${questions.length}`;
+            
+            document.getElementById('questionNum').textContent = `Domanda ${currentQ + 1}/${questions.length}`;
             document.getElementById('question').textContent = q.q;
-
+            document.getElementById('nextBtn').style.display = 'none';
+            document.getElementById('hintBtn').disabled = false;
+            document.getElementById('timeBtn').disabled = false;
+            document.getElementById('skipBtn').disabled = false;
+            
             const optionsDiv = document.getElementById('options');
             optionsDiv.innerHTML = '';
-
-            q.opts.forEach((opt, i) => {
-                const btn = document.createElement('div');
-                btn.className = 'option';
-                btn.textContent = opt;
-                btn.onclick = () => selectAnswer(i);
-                optionsDiv.appendChild(btn);
-            });
-
-            // Reset timer
-            timeLeft = 20;
-            document.getElementById('timer').textContent = timeLeft;
-            document.getElementById('timer').classList.remove('warning');
             
-            if (timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(updateTimer, 1000);
-
-            // Reset hint button
-            if (!hintUsed) {
-                document.getElementById('hintBtn').disabled = false;
-            }
+            q.o.forEach((opt, idx) => {
+                const div = document.createElement('div');
+                div.className = 'option';
+                div.textContent = opt;
+                div.onclick = () => selectAnswer(idx);
+                optionsDiv.appendChild(div);
+            });
+            
+            startTimer();
         }
-
+        
+        function startTimer() {
+            timeLeft = 20;
+            updateTimer();
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimer();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    if (!answered) {
+                        selectAnswer(-1);
+                    }
+                }
+            }, 1000);
+        }
+        
         function updateTimer() {
-            timeLeft--;
-            document.getElementById('timer').textContent = timeLeft;
-
+            const timerEl = document.getElementById('timer');
+            document.getElementById('timeLeft').textContent = timeLeft;
+            
             if (timeLeft <= 5) {
-                document.getElementById('timer').classList.add('warning');
-            }
-
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                selectAnswer(-1); // Time's up
+                timerEl.classList.add('warning');
+            } else {
+                timerEl.classList.remove('warning');
             }
         }
-
-        function selectAnswer(index) {
-            clearInterval(timerInterval);
+        
+        function selectAnswer(idx) {
+            if (answered) return;
+            
+            answered = true;
+            clearInterval(timer);
             
             const q = questions[currentQ];
             const options = document.querySelectorAll('.option');
             
-            // Disable all options
-            options.forEach(opt => opt.classList.add('disabled'));
-
-            // Calculate time used for this question
-            const timeUsed = 20 - timeLeft;
-            totalTimeUsed += timeUsed;
-
-            if (index === q.correct) {
-                // Correct answer
-                options[index].classList.add('correct');
-                const points = 10 + timeLeft; // 10 base + bonus for speed
-                score += points;
-                correctCount++;
-                showNotification(`Corretto! +${points} punti`);
-            } else {
-                // Wrong answer
-                if (index >= 0) {
-                    options[index].classList.add('wrong');
-                }
-                options[q.correct].classList.add('correct');
-                showNotification('Risposta sbagliata!');
+            options[q.a].classList.add('correct');
+            
+            if (idx === q.a) {
+                score++;
+            } else if (idx >= 0) {
+                options[idx].classList.add('wrong');
             }
-
-            // Next question after delay
+            
             setTimeout(() => {
                 currentQ++;
-                loadQuestion();
+                showQuestion();
             }, 2000);
         }
-
-        function useHint() {
-            if (hintUsed) return;
+        
+        function nextQuestion() {
+            currentQ++;
+            showQuestion();
+        }
+        
+        function endQuiz() {
+            clearInterval(timer);
+            showScreen('resultScreen');
+            
+            const points = score * 10;
+            document.getElementById('finalScore').textContent = `${score}/${questions.length}`;
+            document.getElementById('earnedPoints').textContent = points;
+            
+            saveUserData(points);
+        }
+        
+        // ========================================
+        // TELEGRAM STARS MONETIZATION
+        // ========================================
+        
+        function buyHint() {
+            if (hintUsed || answered) {
+                tg.showAlert('⚠️ Non puoi usare hint ora!');
+                return;
+            }
+            
+            tg.showPopup({
+                title: '💡 Acquista Hint',
+                message: 'Elimina 2 risposte sbagliate!\n\nPrezzo: 10 Telegram Stars ⭐',
+                buttons: [
+                    {id: 'buy', type: 'default', text: 'Acquista 10 ⭐'},
+                    {id: 'cancel', type: 'cancel', text: 'Annulla'}
+                ]
+            }, (buttonId) => {
+                if (buttonId === 'buy') {
+                    // IN PRODUZIONE: tg.openInvoice() per vero pagamento
+                    applyHint();
+                    tg.showAlert('✅ Hint acquistato! 2 risposte sbagliate eliminate.');
+                }
+            });
+        }
+        
+        function applyHint() {
+            if (hintUsed || answered) return;
             
             hintUsed = true;
             document.getElementById('hintBtn').disabled = true;
             
             const q = questions[currentQ];
             const options = document.querySelectorAll('.option');
-            
             let removed = 0;
-            for (let i = 0; i < options.length && removed < 2; i++) {
-                if (i !== q.correct) {
-                    options[i].style.opacity = '0.3';
-                    options[i].style.pointerEvents = 'none';
+            
+            options.forEach((opt, idx) => {
+                if (idx !== q.a && removed < 2) {
+                    opt.style.opacity = '0.3';
+                    opt.style.pointerEvents = 'none';
+                    opt.style.textDecoration = 'line-through';
                     removed++;
                 }
+            });
+        }
+        
+        function buyTime() {
+            if (answered) {
+                tg.showAlert('⚠️ Non puoi comprare tempo ora!');
+                return;
             }
             
-            showNotification('2 risposte sbagliate eliminate!');
-        }
-
-        function showResults() {
-            // Calculate time bonus
-            const avgTimePerQuestion = totalTimeUsed / questions.length;
-            const timeBonus = Math.max(0, Math.floor((200 - totalTimeUsed) / 2));
-            const finalScore = score + timeBonus;
-
-            document.getElementById('finalScore').textContent = finalScore;
-            document.getElementById('correctAnswers').textContent = correctCount;
-            document.getElementById('totalTime').textContent = totalTimeUsed;
-            document.getElementById('timeBonus').textContent = timeBonus;
-
-            // Set message based on performance
-            let message = '';
-            if (correctCount === 10) message = '🏆 Perfetto! Sei un campione!';
-            else if (correctCount >= 7) message = '🌟 Ottimo lavoro!';
-            else if (correctCount >= 5) message = '👍 Buon risultato!';
-            else message = '💪 Continua ad allenarti!';
-            
-            document.getElementById('resultMessage').textContent = message;
-
-            // Save score
-            saveUserData(finalScore);
-
-            showScreen('resultsScreen');
-        }
-
-        function resetQuiz() {
-            showScreen('welcomeScreen');
-        }
-
-        function shareResults() {
-            const finalScore = score + Math.max(0, Math.floor((200 - totalTimeUsed) / 2));
-            const text = `🎯 Quiz Mania Daily\n\n` +
-                        `Ho totalizzato ${finalScore} punti!\n` +
-                        `✅ ${correctCount}/10 risposte corrette\n\n` +
-                        `Riesci a battermi? 🚀`;
-            
-            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                tg.shareMessage(text);
-            } else {
-                alert('Apri dal bot Telegram per condividere!');
+            if (timeLeft >= 30) {
+                tg.showAlert('⚠️ Hai già abbastanza tempo!');
+                return;
             }
+            
+            tg.showPopup({
+                title: '⏰ Acquista Tempo Extra',
+                message: 'Aggiungi 10 secondi al timer!\n\nPrezzo: 5 Telegram Stars ⭐',
+                buttons: [
+                    {id: 'buy', type: 'default', text: 'Acquista 5 ⭐'},
+                    {id: 'cancel', type: 'cancel', text: 'Annulla'}
+                ]
+            }, (buttonId) => {
+                if (buttonId === 'buy') {
+                    // IN PRODUZIONE: tg.openInvoice() per vero pagamento
+                    timeLeft += 10;
+                    updateTimer();
+                    document.getElementById('timeBtn').disabled = true;
+                    tg.showAlert('✅ +10 secondi aggiunti al timer!');
+                }
+            });
+        }
+        
+        function buySkip() {
+            if (answered) {
+                tg.showAlert('⚠️ Non puoi saltare ora!');
+                return;
+            }
+            
+            tg.showPopup({
+                title: '⏭️ Salta Domanda',
+                message: 'Salta questa domanda senza perdere il quiz!\n(Non guadagnerai punti per questa domanda)\n\nPrezzo: 8 Telegram Stars ⭐',
+                buttons: [
+                    {id: 'buy', type: 'default', text: 'Salta 8 ⭐'},
+                    {id: 'cancel', type: 'cancel', text: 'Annulla'}
+                ]
+            }, (buttonId) => {
+                if (buttonId === 'buy') {
+                    // IN PRODUZIONE: tg.openInvoice() per vero pagamento
+                    clearInterval(timer);
+                    answered = true;
+                    tg.showAlert('✅ Domanda saltata!');
+                    setTimeout(() => {
+                        currentQ++;
+                        showQuestion();
+                    }, 1000);
+                }
+            });
+        }
+        
+        // ========================================
+        // SOCIAL & NAVIGATION
+        // ========================================
+        
+        function showLeaderboard() {
+            showScreen('leaderboardScreen');
+            
+            try {
+                const lb = JSON.parse(localStorage.getItem('qm_leaderboard') || '[]');
+                const listDiv = document.getElementById('leaderboardList');
+                
+                if (lb.length === 0) {
+                    listDiv.innerHTML = '<p style="text-align:center; padding: 40px; color: #999;">Nessun giocatore ancora. Sii il primo! 🏆</p>';
+                    return;
+                }
+                
+                listDiv.innerHTML = lb.map((u, i) => `
+                    <div class="leaderboard-item">
+                        <div>
+                            <span class="rank">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1)}</span>
+                            <span>${u.name}</span>
+                        </div>
+                        <div style="font-weight: bold; color: #ffd700;">${u.total} pts</div>
+                    </div>
+                `).join('');
+                
+            } catch(e) {
+                document.getElementById('leaderboardList').innerHTML = '<p style="text-align:center; padding: 40px; color: #ff6b6b;">Errore caricamento classifica</p>';
+            }
+        }
+        
+        function shareGame() {
+            const url = 'https://t.me/quiz_daily_italia_bot';
+            const text = `🧠 QuizMania - Il quiz quotidiano italiano!\n\n🎮 Gioca ora e sfida i tuoi amici!\n💡 Usa powerup con Telegram Stars ⭐`;
+            
+            tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`);
+        }
+        
+        function shareScore() {
+            const url = 'https://t.me/quiz_daily_italia_bot';
+            const text = `🎉 Ho completato QuizMania!\n\n📊 Punteggio: ${score}/${questions.length}\n⭐ Punti: ${score * 10}\n\n🧠 Riesci a battermi? Gioca ora!`;
+            
+            tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`);
+        }
+        
+        function goHome() {
+            showScreen('homeScreen');
+            loadUserData();
+        }
+        
+        // Initialize
+        loadUserData();
+        
+        // Show welcome message
+        if (tg.initDataUnsafe.user) {
+            console.log('👋 Benvenuto', tg.initDataUnsafe.user.first_name);
         }
     </script>
 </body>
